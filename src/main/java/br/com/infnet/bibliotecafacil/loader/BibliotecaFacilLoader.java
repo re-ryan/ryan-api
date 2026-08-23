@@ -1,5 +1,10 @@
 package br.com.infnet.bibliotecafacil.loader;
 
+import br.com.infnet.bibliotecafacil.aplicacao.service.AutorService;
+import br.com.infnet.bibliotecafacil.aplicacao.service.BibliotecaService;
+import br.com.infnet.bibliotecafacil.aplicacao.service.CategoriaService;
+import br.com.infnet.bibliotecafacil.aplicacao.service.LivroService;
+import br.com.infnet.bibliotecafacil.aplicacao.service.UsuarioService;
 import br.com.infnet.bibliotecafacil.dominio.Acervo;
 import br.com.infnet.bibliotecafacil.dominio.Administrador;
 import br.com.infnet.bibliotecafacil.dominio.Autor;
@@ -18,6 +23,20 @@ import org.springframework.stereotype.Component;
 @Component
 public final class BibliotecaFacilLoader implements CommandLineRunner {
 
+    private final AutorService autorService;
+    private final BibliotecaService bibliotecaService;
+    private final CategoriaService categoriaService;
+    private final LivroService livroService;
+    private final UsuarioService usuarioService;
+
+    public BibliotecaFacilLoader(final AutorService autorService, final BibliotecaService bibliotecaService, final CategoriaService categoriaService, final LivroService livroService, final UsuarioService usuarioService) {
+        this.autorService = autorService;
+        this.bibliotecaService = bibliotecaService;
+        this.categoriaService = categoriaService;
+        this.livroService = livroService;
+        this.usuarioService = usuarioService;
+    }
+
     @Override
     public void run(final String... args) {
         final Autor machadoDeAssis = new Autor();
@@ -29,6 +48,8 @@ public final class BibliotecaFacilLoader implements CommandLineRunner {
         clariceLispector.setId(2L);
         clariceLispector.setNome("Clarice Lispector");
         clariceLispector.setNomeCatalogacao("LISPECTOR, Clarice");
+        this.autorService.incluir(machadoDeAssis);
+        this.autorService.incluir(clariceLispector);
 
         final Categoria romance = new Categoria();
         romance.setId(1L);
@@ -39,6 +60,8 @@ public final class BibliotecaFacilLoader implements CommandLineRunner {
         literaturaBrasileira.setId(2L);
         literaturaBrasileira.setNome("Literatura brasileira");
         literaturaBrasileira.setDescricao("Obras publicadas por autores brasileiros.");
+        this.categoriaService.incluir(romance);
+        this.categoriaService.incluir(literaturaBrasileira);
 
         final Livro domCasmurro = new Livro();
         domCasmurro.setId(3L);
@@ -63,6 +86,8 @@ public final class BibliotecaFacilLoader implements CommandLineRunner {
         aHoraDaEstrela.adicionarAutor(clariceLispector, 1);
         aHoraDaEstrela.adicionarCategoria(romance);
         aHoraDaEstrela.adicionarCategoria(literaturaBrasileira);
+        this.livroService.incluir(domCasmurro);
+        this.livroService.incluir(aHoraDaEstrela);
 
         final Endereco endereco = new Endereco();
         endereco.setId(1L);
@@ -85,6 +110,7 @@ public final class BibliotecaFacilLoader implements CommandLineRunner {
         biblioteca.setEndereco(endereco);
         final Acervo acervoDomCasmurro = biblioteca.adicionarLivro(6L, domCasmurro, 3);
         biblioteca.adicionarLivro(7L, aHoraDaEstrela, 2);
+        this.bibliotecaService.incluir(biblioteca);
 
         final Leitor leitor = new Leitor();
         leitor.setId(8L);
@@ -113,9 +139,13 @@ public final class BibliotecaFacilLoader implements CommandLineRunner {
         administrador.setEmail("marina@bibliotecafacil.com");
         administrador.setSenhaHash("hash-seguro-marina");
         administrador.setTipoUsuario(TipoUsuario.ADMINISTRADOR);
+        this.usuarioService.incluir(leitor);
+        this.usuarioService.incluir(bibliotecario);
+        this.usuarioService.incluir(administrador);
         final Reserva reserva = leitor.reservar(10L, acervoDomCasmurro);
 
         this.apresentarBiblioteca(biblioteca);
+        this.apresentarConsultas();
         System.out.println(leitor);
         System.out.println(bibliotecario);
         System.out.println(administrador);
@@ -134,5 +164,15 @@ public final class BibliotecaFacilLoader implements CommandLineRunner {
             System.out.println(acervo);
             System.out.println(acervo.getLivro());
         }
+    }
+
+    private void apresentarConsultas() {
+        System.out.println("\n=== Consultas da Etapa 2 ===");
+        System.out.println("Títulos cadastrados: " + this.livroService.listarTitulos());
+        System.out.println("Livros encontrados por 'estrela': " + this.livroService.buscarPorTitulo("estrela"));
+        System.out.println("Autores ordenados: " + this.autorService.listarOrdenadosPorNome());
+        System.out.println("Categorias ativas: " + this.categoriaService.listarAtivas());
+        System.out.println("Nomes das bibliotecas: " + this.bibliotecaService.listarNomes());
+        System.out.println("Leitores: " + this.usuarioService.filtrarPorTipo(TipoUsuario.LEITOR));
     }
 }
