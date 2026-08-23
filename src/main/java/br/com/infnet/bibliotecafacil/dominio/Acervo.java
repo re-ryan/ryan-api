@@ -123,8 +123,7 @@ public final class Acervo {
     public String toString() {
         return ("Acervo{id=%s, biblioteca='%s', livro='%s', quantidadeReal=%s, "
                 + "quantidadeDisponivel=%s, ativo=%s, dataCriacao=%s, dataAtualizacao=%s}")
-                .formatted(
-                        this.id,
+                .formatted(this.id,
                         this.biblioteca.getNome(),
                         this.livro.getTitulo(),
                         this.quantidadeReal,
