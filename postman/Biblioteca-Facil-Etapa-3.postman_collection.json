@@ -1,0 +1,169 @@
+{
+  "info": {
+    "name": "Biblioteca Fácil - Etapa 3",
+    "description": "Requisições principais da API REST. Execute as requisições de cada pasta na ordem apresentada.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {"key": "baseUrl", "value": "http://localhost:8080"}
+  ],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const esperado = Number(pm.info.requestName.match(/\\((\\d{3})\\)$/)?.[1]);",
+          "if (esperado) pm.test(`Status ${esperado}`, () => pm.response.to.have.status(esperado));"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Autores",
+      "item": [
+        {
+          "name": "Incluir autor (201)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"id\": 101,\n  \"nome\": \"Conceição Evaristo\",\n  \"nomeCatalogacao\": \"EVARISTO, Conceição\"\n}"},
+            "url": "{{baseUrl}}/api/autores"
+          }
+        },
+        {"name": "Obter autor por ID (200)", "request": {"method": "GET", "url": "{{baseUrl}}/api/autores/101"}},
+        {
+          "name": "Alterar autor (200)",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"nome\": \"Conceição Evaristo\",\n  \"nomeCatalogacao\": \"EVARISTO, Conceição - revisado\"\n}"},
+            "url": "{{baseUrl}}/api/autores/101"
+          }
+        },
+        {"name": "Listar autores (200)", "request": {"method": "GET", "url": "{{baseUrl}}/api/autores"}},
+        {"name": "Excluir autor (204)", "request": {"method": "DELETE", "url": "{{baseUrl}}/api/autores/101"}}
+      ]
+    },
+    {
+      "name": "Categorias",
+      "item": [
+        {
+          "name": "Incluir categoria (201)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"id\": 102,\n  \"nome\": \"Contos\",\n  \"descricao\": \"Narrativas curtas\"\n}"},
+            "url": "{{baseUrl}}/api/categorias"
+          }
+        },
+        {"name": "Obter categoria por ID (200)", "request": {"method": "GET", "url": "{{baseUrl}}/api/categorias/102"}},
+        {
+          "name": "Alterar categoria (200)",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"nome\": \"Contos brasileiros\",\n  \"descricao\": \"Narrativas curtas brasileiras\"\n}"},
+            "url": "{{baseUrl}}/api/categorias/102"
+          }
+        },
+        {"name": "Listar categorias (200)", "request": {"method": "GET", "url": "{{baseUrl}}/api/categorias"}},
+        {"name": "Excluir categoria (204)", "request": {"method": "DELETE", "url": "{{baseUrl}}/api/categorias/102"}}
+      ]
+    },
+    {
+      "name": "Livros",
+      "item": [
+        {
+          "name": "Incluir livro (201)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"id\": 103,\n  \"titulo\": \"Torto Arado\",\n  \"isbn10\": null,\n  \"isbn13\": \"9786580309313\",\n  \"editora\": \"Todavia\",\n  \"anoPublicacao\": 2019,\n  \"edicao\": \"1ª edição\",\n  \"descricao\": \"Romance brasileiro\",\n  \"urlImagemCapa\": null\n}"},
+            "url": "{{baseUrl}}/api/livros"
+          }
+        },
+        {"name": "Obter livro por ID (200)", "request": {"method": "GET", "url": "{{baseUrl}}/api/livros/103"}},
+        {
+          "name": "Alterar livro (200)",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"titulo\": \"Torto Arado - edição especial\",\n  \"isbn10\": null,\n  \"isbn13\": \"9786580309313\",\n  \"editora\": \"Todavia\",\n  \"anoPublicacao\": 2019,\n  \"edicao\": \"Edição especial\",\n  \"descricao\": \"Romance brasileiro\",\n  \"urlImagemCapa\": null\n}"},
+            "url": "{{baseUrl}}/api/livros/103"
+          }
+        },
+        {"name": "Listar livros (200)", "request": {"method": "GET", "url": "{{baseUrl}}/api/livros"}},
+        {"name": "Excluir livro (204)", "request": {"method": "DELETE", "url": "{{baseUrl}}/api/livros/103"}}
+      ]
+    },
+    {
+      "name": "Bibliotecas",
+      "item": [
+        {
+          "name": "Incluir biblioteca (201)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"id\": 104,\n  \"nome\": \"Biblioteca Centro\",\n  \"cpfCnpj\": \"98765432000110\",\n  \"email\": \"centro@biblioteca.com\",\n  \"telefone\": \"2133334444\",\n  \"endereco\": {\n    \"id\": 104,\n    \"cep\": \"20040002\",\n    \"logradouro\": \"Rua da Assembleia\",\n    \"numero\": \"10\",\n    \"bairro\": \"Centro\",\n    \"cidade\": \"Rio de Janeiro\",\n    \"uf\": \"RJ\"\n  }\n}"},
+            "url": "{{baseUrl}}/api/bibliotecas"
+          }
+        },
+        {"name": "Obter biblioteca por ID (200)", "request": {"method": "GET", "url": "{{baseUrl}}/api/bibliotecas/104"}},
+        {
+          "name": "Alterar biblioteca (200)",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"nome\": \"Biblioteca Centro Renovada\",\n  \"cpfCnpj\": \"98765432000110\",\n  \"email\": \"centro@biblioteca.com\",\n  \"telefone\": \"2133335555\",\n  \"endereco\": {\n    \"id\": 104,\n    \"cep\": \"20040002\",\n    \"logradouro\": \"Rua da Assembleia\",\n    \"numero\": \"10\",\n    \"complemento\": \"Sala 2\",\n    \"bairro\": \"Centro\",\n    \"cidade\": \"Rio de Janeiro\",\n    \"uf\": \"RJ\"\n  }\n}"},
+            "url": "{{baseUrl}}/api/bibliotecas/104"
+          }
+        },
+        {"name": "Listar bibliotecas (200)", "request": {"method": "GET", "url": "{{baseUrl}}/api/bibliotecas"}},
+        {"name": "Excluir biblioteca (204)", "request": {"method": "DELETE", "url": "{{baseUrl}}/api/bibliotecas/104"}}
+      ]
+    },
+    {
+      "name": "Usuários",
+      "item": [
+        {
+          "name": "Incluir usuário (201)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"id\": 105,\n  \"nomeCompleto\": \"João Pereira\",\n  \"dataNascimento\": \"1990-10-10\",\n  \"login\": \"joao.pereira\",\n  \"email\": \"joao@email.com\",\n  \"senhaHash\": \"hash-joao\",\n  \"tipoUsuario\": \"LEITOR\",\n  \"bibliotecaId\": null\n}"},
+            "url": "{{baseUrl}}/api/usuarios"
+          }
+        },
+        {"name": "Obter usuário por ID (200)", "request": {"method": "GET", "url": "{{baseUrl}}/api/usuarios/105"}},
+        {
+          "name": "Alterar usuário (200)",
+          "request": {
+            "method": "PUT",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"nomeCompleto\": \"João Pereira da Silva\",\n  \"dataNascimento\": \"1990-10-10\",\n  \"login\": \"joao.pereira\",\n  \"email\": \"joao@email.com\",\n  \"senhaHash\": \"hash-joao-atualizado\",\n  \"tipoUsuario\": \"LEITOR\",\n  \"bibliotecaId\": null\n}"},
+            "url": "{{baseUrl}}/api/usuarios/105"
+          }
+        },
+        {"name": "Listar usuários (200)", "request": {"method": "GET", "url": "{{baseUrl}}/api/usuarios"}},
+        {"name": "Excluir usuário (204)", "request": {"method": "DELETE", "url": "{{baseUrl}}/api/usuarios/105"}}
+      ]
+    },
+    {
+      "name": "Erros representativos",
+      "item": [
+        {"name": "Livro inexistente (404)", "request": {"method": "GET", "url": "{{baseUrl}}/api/livros/999999"}},
+        {
+          "name": "Livro com dados inválidos (400)",
+          "request": {
+            "method": "POST",
+            "header": [{"key": "Content-Type", "value": "application/json"}],
+            "body": {"mode": "raw", "raw": "{\n  \"id\": 106,\n  \"titulo\": \"Livro sem ISBN\",\n  \"isbn10\": null,\n  \"isbn13\": null\n}"},
+            "url": "{{baseUrl}}/api/livros"
+          }
+        }
+      ]
+    }
+  ]
+}

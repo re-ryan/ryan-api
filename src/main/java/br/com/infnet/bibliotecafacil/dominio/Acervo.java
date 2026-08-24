@@ -1,5 +1,6 @@
 package br.com.infnet.bibliotecafacil.dominio;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 
 public final class Acervo {
@@ -91,6 +92,7 @@ public final class Acervo {
         return this.id;
     }
 
+    @JsonIgnore
     public Biblioteca getBiblioteca() {
         return this.biblioteca;
     }

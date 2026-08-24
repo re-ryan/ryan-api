@@ -1,0 +1,57 @@
+package br.com.infnet.bibliotecafacil.api.controller;
+
+import br.com.infnet.bibliotecafacil.aplicacao.service.CategoriaService;
+import br.com.infnet.bibliotecafacil.dominio.Categoria;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import java.net.URI;
+import java.util.List;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+@RestController
+@RequestMapping("/api/categorias")
+@Tag(name = "Categorias")
+public final class CategoriaController {
+
+    private final CategoriaService categoriaService;
+
+    public CategoriaController(final CategoriaService categoriaService) {
+        this.categoriaService = categoriaService;
+    }
+
+    @GetMapping
+    public List<Categoria> listar() {
+        return this.categoriaService.listar();
+    }
+
+    @GetMapping("/{id}")
+    public Categoria obterPorId(final @PathVariable Long id) {
+        return this.categoriaService.obterPorId(id);
+    }
+
+    @PostMapping
+    public ResponseEntity<Categoria> incluir(final @RequestBody Categoria categoria) {
+        this.categoriaService.incluir(categoria);
+        return ResponseEntity.created(URI.create("/api/categorias/" + categoria.getId())).body(categoria);
+    }
+
+    @PutMapping("/{id}")
+    public Categoria alterar(final @PathVariable Long id, final @RequestBody Categoria categoria) {
+        categoria.setId(id);
+        this.categoriaService.alterar(categoria);
+        return categoria;
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> excluir(final @PathVariable Long id) {
+        this.categoriaService.excluir(id);
+        return ResponseEntity.noContent().build();
+    }
+}

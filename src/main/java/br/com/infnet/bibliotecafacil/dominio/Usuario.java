@@ -1,5 +1,6 @@
 package br.com.infnet.bibliotecafacil.dominio;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -83,6 +84,7 @@ public abstract class Usuario {
         return this.email;
     }
 
+    @JsonIgnore
     public String getSenhaHash() {
         return this.senhaHash;
     }

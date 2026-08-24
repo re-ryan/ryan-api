@@ -1,5 +1,6 @@
 package br.com.infnet.bibliotecafacil.dominio;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import java.time.LocalDateTime;
 
 public final class Reserva {
@@ -61,6 +62,7 @@ public final class Reserva {
         return this.id;
     }
 
+    @JsonIgnore
     public Leitor getLeitor() {
         return this.leitor;
     }
