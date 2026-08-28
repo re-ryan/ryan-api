@@ -10,6 +10,7 @@ import br.com.infnet.bibliotecafacil.dominio.Leitor;
 import br.com.infnet.bibliotecafacil.dominio.TipoUsuario;
 import br.com.infnet.bibliotecafacil.dominio.Usuario;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -46,16 +47,17 @@ public final class UsuarioController {
     }
 
     @PostMapping
-    public ResponseEntity<Usuario> incluir(final @RequestBody UsuarioRequestDto request) {
-        final Usuario usuario = this.criarUsuario(request.id(), request);
+    public ResponseEntity<Usuario> incluir(final @Valid @RequestBody UsuarioRequestDto request) {
+        final Usuario usuario = this.criarUsuario(request);
         final Usuario usuarioIncluido = this.usuarioService.incluir(usuario);
         return ResponseEntity.created(URI.create("/api/usuarios/" + usuarioIncluido.getId()))
                 .body(usuarioIncluido);
     }
 
     @PutMapping("/{id}")
-    public Usuario alterar(final @PathVariable Long id, final @RequestBody UsuarioRequestDto request) {
-        final Usuario usuario = this.criarUsuario(id, request);
+    public Usuario alterar(final @PathVariable Long id, final @Valid @RequestBody UsuarioRequestDto request) {
+        final Usuario usuario = this.criarUsuario(request);
+        usuario.setId(id);
         return this.usuarioService.alterar(usuario);
     }
 
@@ -65,9 +67,8 @@ public final class UsuarioController {
         return ResponseEntity.noContent().build();
     }
 
-    private Usuario criarUsuario(final Long id, final UsuarioRequestDto request) {
+    private Usuario criarUsuario(final UsuarioRequestDto request) {
         final Usuario usuario = this.criarTipoDeUsuario(request.tipoUsuario());
-        usuario.setId(id);
         usuario.setNomeCompleto(request.nomeCompleto());
         usuario.setDataNascimento(request.dataNascimento());
         usuario.setLogin(request.login());

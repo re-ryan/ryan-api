@@ -1,8 +1,10 @@
 package br.com.infnet.bibliotecafacil.api.controller;
 
+import br.com.infnet.bibliotecafacil.api.dto.AutorRequestDto;
 import br.com.infnet.bibliotecafacil.aplicacao.service.AutorService;
 import br.com.infnet.bibliotecafacil.dominio.Autor;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -37,14 +39,16 @@ public final class AutorController {
     }
 
     @PostMapping
-    public ResponseEntity<Autor> incluir(final @RequestBody Autor autor) {
+    public ResponseEntity<Autor> incluir(final @Valid @RequestBody AutorRequestDto request) {
+        final Autor autor = this.criarAutor(request);
         final Autor autorIncluido = this.autorService.incluir(autor);
         return ResponseEntity.created(URI.create("/api/autores/" + autorIncluido.getId()))
                 .body(autorIncluido);
     }
 
     @PutMapping("/{id}")
-    public Autor alterar(final @PathVariable Long id, final @RequestBody Autor autor) {
+    public Autor alterar(final @PathVariable Long id, final @Valid @RequestBody AutorRequestDto request) {
+        final Autor autor = this.criarAutor(request);
         autor.setId(id);
         return this.autorService.alterar(autor);
     }
@@ -53,5 +57,12 @@ public final class AutorController {
     public ResponseEntity<Void> excluir(final @PathVariable Long id) {
         this.autorService.excluir(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private Autor criarAutor(final AutorRequestDto request) {
+        final Autor autor = new Autor();
+        autor.setNome(request.nome());
+        autor.setNomeCatalogacao(request.nomeCatalogacao());
+        return autor;
     }
 }

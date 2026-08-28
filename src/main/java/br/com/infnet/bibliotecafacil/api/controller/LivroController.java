@@ -4,6 +4,7 @@ import br.com.infnet.bibliotecafacil.api.dto.LivroRequestDto;
 import br.com.infnet.bibliotecafacil.aplicacao.service.LivroService;
 import br.com.infnet.bibliotecafacil.dominio.Livro;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -38,16 +39,17 @@ public final class LivroController {
     }
 
     @PostMapping
-    public ResponseEntity<Livro> incluir(final @RequestBody LivroRequestDto request) {
-        final Livro livro = this.criarLivro(request.id(), request);
+    public ResponseEntity<Livro> incluir(final @Valid @RequestBody LivroRequestDto request) {
+        final Livro livro = this.criarLivro(request);
         final Livro livroIncluido = this.livroService.incluir(livro);
         return ResponseEntity.created(URI.create("/api/livros/" + livroIncluido.getId()))
                 .body(livroIncluido);
     }
 
     @PutMapping("/{id}")
-    public Livro alterar(final @PathVariable Long id, final @RequestBody LivroRequestDto request) {
-        final Livro livroAlterado = this.criarLivro(id, request);
+    public Livro alterar(final @PathVariable Long id, final @Valid @RequestBody LivroRequestDto request) {
+        final Livro livroAlterado = this.criarLivro(request);
+        livroAlterado.setId(id);
         return this.livroService.alterar(livroAlterado);
     }
 
@@ -57,9 +59,8 @@ public final class LivroController {
         return ResponseEntity.noContent().build();
     }
 
-    private Livro criarLivro(final Long id, final LivroRequestDto request) {
+    private Livro criarLivro(final LivroRequestDto request) {
         final Livro livro = new Livro();
-        livro.setId(id);
         livro.setTitulo(request.titulo());
         livro.setIsbn(request.isbn10(), request.isbn13());
         livro.setEditora(request.editora());

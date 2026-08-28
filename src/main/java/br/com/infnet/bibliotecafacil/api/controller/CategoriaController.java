@@ -1,8 +1,10 @@
 package br.com.infnet.bibliotecafacil.api.controller;
 
+import br.com.infnet.bibliotecafacil.api.dto.CategoriaRequestDto;
 import br.com.infnet.bibliotecafacil.aplicacao.service.CategoriaService;
 import br.com.infnet.bibliotecafacil.dominio.Categoria;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -37,14 +39,16 @@ public final class CategoriaController {
     }
 
     @PostMapping
-    public ResponseEntity<Categoria> incluir(final @RequestBody Categoria categoria) {
+    public ResponseEntity<Categoria> incluir(final @Valid @RequestBody CategoriaRequestDto request) {
+        final Categoria categoria = this.criarCategoria(request);
         final Categoria categoriaIncluida = this.categoriaService.incluir(categoria);
         return ResponseEntity.created(URI.create("/api/categorias/" + categoriaIncluida.getId()))
                 .body(categoriaIncluida);
     }
 
     @PutMapping("/{id}")
-    public Categoria alterar(final @PathVariable Long id, final @RequestBody Categoria categoria) {
+    public Categoria alterar(final @PathVariable Long id, final @Valid @RequestBody CategoriaRequestDto request) {
+        final Categoria categoria = this.criarCategoria(request);
         categoria.setId(id);
         return this.categoriaService.alterar(categoria);
     }
@@ -53,5 +57,12 @@ public final class CategoriaController {
     public ResponseEntity<Void> excluir(final @PathVariable Long id) {
         this.categoriaService.excluir(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private Categoria criarCategoria(final CategoriaRequestDto request) {
+        final Categoria categoria = new Categoria();
+        categoria.setNome(request.nome());
+        categoria.setDescricao(request.descricao());
+        return categoria;
     }
 }

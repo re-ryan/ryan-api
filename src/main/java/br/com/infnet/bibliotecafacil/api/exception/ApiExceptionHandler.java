@@ -4,6 +4,7 @@ import br.com.infnet.bibliotecafacil.aplicacao.exception.DadosInvalidosException
 import br.com.infnet.bibliotecafacil.aplicacao.exception.ObjetoNaoEncontradoException;
 import br.com.infnet.bibliotecafacil.aplicacao.exception.OperacaoNaoPermitidaException;
 import java.time.LocalDateTime;
+import org.springframework.context.support.DefaultMessageSourceResolvable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -20,6 +21,15 @@ public final class ApiExceptionHandler {
         return this.criarResposta(HttpStatus.NOT_FOUND, exception.getMessage());
     }
 
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErroApi> tratarValidacao(final MethodArgumentNotValidException exception) {
+        final String mensagem = exception.getBindingResult().getAllErrors().stream()
+                .map(DefaultMessageSourceResolvable::getDefaultMessage)
+                .findFirst()
+                .orElse("Os dados informados são inválidos.");
+        return this.criarResposta(HttpStatus.BAD_REQUEST, mensagem);
+    }
+
     @ExceptionHandler({
             DadosInvalidosException.class,
             OperacaoNaoPermitidaException.class,
@@ -27,7 +37,6 @@ public final class ApiExceptionHandler {
             IllegalStateException.class,
             NullPointerException.class,
             HttpMessageNotReadableException.class,
-            MethodArgumentNotValidException.class,
             MethodArgumentTypeMismatchException.class
     })
     public ResponseEntity<ErroApi> tratarRequisicaoInvalida(final Exception exception) {

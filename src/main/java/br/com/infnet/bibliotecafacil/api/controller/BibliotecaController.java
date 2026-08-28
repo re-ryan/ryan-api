@@ -1,8 +1,10 @@
 package br.com.infnet.bibliotecafacil.api.controller;
 
+import br.com.infnet.bibliotecafacil.api.dto.BibliotecaRequestDto;
 import br.com.infnet.bibliotecafacil.aplicacao.service.BibliotecaService;
 import br.com.infnet.bibliotecafacil.dominio.Biblioteca;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
 import org.springframework.http.ResponseEntity;
@@ -37,14 +39,16 @@ public final class BibliotecaController {
     }
 
     @PostMapping
-    public ResponseEntity<Biblioteca> incluir(final @RequestBody Biblioteca biblioteca) {
+    public ResponseEntity<Biblioteca> incluir(final @Valid @RequestBody BibliotecaRequestDto request) {
+        final Biblioteca biblioteca = this.criarBiblioteca(request);
         final Biblioteca bibliotecaIncluida = this.bibliotecaService.incluir(biblioteca);
         return ResponseEntity.created(URI.create("/api/bibliotecas/" + bibliotecaIncluida.getId()))
                 .body(bibliotecaIncluida);
     }
 
     @PutMapping("/{id}")
-    public Biblioteca alterar(final @PathVariable Long id, final @RequestBody Biblioteca biblioteca) {
+    public Biblioteca alterar(final @PathVariable Long id, final @Valid @RequestBody BibliotecaRequestDto request) {
+        final Biblioteca biblioteca = this.criarBiblioteca(request);
         biblioteca.setId(id);
         return this.bibliotecaService.alterar(biblioteca);
     }
@@ -53,5 +57,17 @@ public final class BibliotecaController {
     public ResponseEntity<Void> excluir(final @PathVariable Long id) {
         this.bibliotecaService.excluir(id);
         return ResponseEntity.noContent().build();
+    }
+
+    private Biblioteca criarBiblioteca(final BibliotecaRequestDto request) {
+        final Biblioteca biblioteca = new Biblioteca();
+        biblioteca.setNome(request.nome());
+        biblioteca.setCpfCnpj(request.cpfCnpj());
+        biblioteca.setEmail(request.email());
+        biblioteca.setTelefone(request.telefone());
+        if (request.endereco() != null) {
+            biblioteca.setEndereco(request.endereco());
+        }
+        return biblioteca;
     }
 }
