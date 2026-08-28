@@ -43,12 +43,10 @@ class BibliotecaServiceTest {
 
     @Test
     public void naoDeveAceitarDadosInvalidos() {
-        final Biblioteca comId = this.criarBiblioteca(1L, "Biblioteca Central", "12345678000199", "central@biblioteca.com");
         final Biblioteca semNome = this.criarBiblioteca(null, " ", "12345678000199", "central@biblioteca.com");
 
         assertAll(
                 () -> assertThrows(DadosInvalidosException.class, () -> this.bibliotecaService.incluir(null)),
-                () -> assertThrows(DadosInvalidosException.class, () -> this.bibliotecaService.incluir(comId)),
                 () -> assertThrows(DadosInvalidosException.class, () -> this.bibliotecaService.incluir(semNome)));
     }
 

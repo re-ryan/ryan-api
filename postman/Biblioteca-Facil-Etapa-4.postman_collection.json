@@ -1,0 +1,515 @@
+{
+  "info": {
+    "name": "Biblioteca Fácil - Etapa 4",
+    "description": "Requisições da API REST com persistência JPA, validação e consultas ordenadas. Execute a coleção na ordem apresentada.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:8080"
+    },
+    {
+      "key": "autorId",
+      "value": ""
+    },
+    {
+      "key": "categoriaId",
+      "value": ""
+    },
+    {
+      "key": "livroId",
+      "value": ""
+    },
+    {
+      "key": "bibliotecaId",
+      "value": ""
+    },
+    {
+      "key": "usuarioId",
+      "value": ""
+    }
+  ],
+  "event": [
+    {
+      "listen": "test",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const statusEsperado = Number(pm.info.requestName.match(/\\((\\d{3})\\)$/)?.[1]);",
+          "if (statusEsperado) {",
+          "  pm.test('Status ' + statusEsperado, () => pm.response.to.have.status(statusEsperado));",
+          "}"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Autores",
+      "item": [
+        {
+          "name": "Incluir autor (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "pm.collectionVariables.set('autorId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Conceição Evaristo\",\n  \"nomeCatalogacao\": \"EVARISTO, Conceição\"\n}"
+            },
+            "url": "{{baseUrl}}/api/autores"
+          }
+        },
+        {
+          "name": "Obter autor por ID (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/autores/{{autorId}}"
+          }
+        },
+        {
+          "name": "Alterar autor (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Conceição Evaristo\",\n  \"nomeCatalogacao\": \"EVARISTO, Conceição - revisado\"\n}"
+            },
+            "url": "{{baseUrl}}/api/autores/{{autorId}}"
+          }
+        },
+        {
+          "name": "Buscar autores com ordenação padrão (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/autores/busca?nome=a"
+          }
+        },
+        {
+          "name": "Buscar autores em ordem decrescente (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/autores/busca?nome=a&sort=nome,desc"
+          }
+        },
+        {
+          "name": "Listar autores (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/autores"
+          }
+        },
+        {
+          "name": "Excluir autor (204)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/autores/{{autorId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Categorias",
+      "item": [
+        {
+          "name": "Incluir categoria (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "pm.collectionVariables.set('categoriaId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Contos\",\n  \"descricao\": \"Narrativas curtas\"\n}"
+            },
+            "url": "{{baseUrl}}/api/categorias"
+          }
+        },
+        {
+          "name": "Obter categoria por ID (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/categorias/{{categoriaId}}"
+          }
+        },
+        {
+          "name": "Alterar categoria (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Contos brasileiros\",\n  \"descricao\": \"Narrativas curtas brasileiras\"\n}"
+            },
+            "url": "{{baseUrl}}/api/categorias/{{categoriaId}}"
+          }
+        },
+        {
+          "name": "Buscar categorias com ordenação padrão (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/categorias/busca?nome=o"
+          }
+        },
+        {
+          "name": "Buscar categorias em ordem decrescente (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/categorias/busca?nome=o&sort=nome,desc"
+          }
+        },
+        {
+          "name": "Listar categorias (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/categorias"
+          }
+        },
+        {
+          "name": "Excluir categoria (204)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/categorias/{{categoriaId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Livros",
+      "item": [
+        {
+          "name": "Incluir livro (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "pm.collectionVariables.set('livroId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Torto Arado\",\n  \"isbn10\": null,\n  \"isbn13\": \"9786580309313\",\n  \"editora\": \"Todavia\",\n  \"anoPublicacao\": 2019,\n  \"edicao\": \"1ª edição\",\n  \"descricao\": \"Romance brasileiro\",\n  \"urlImagemCapa\": null\n}"
+            },
+            "url": "{{baseUrl}}/api/livros"
+          }
+        },
+        {
+          "name": "Obter livro por ID (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/livros/{{livroId}}"
+          }
+        },
+        {
+          "name": "Alterar livro (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"Torto Arado - edição especial\",\n  \"isbn10\": null,\n  \"isbn13\": \"9786580309313\",\n  \"editora\": \"Todavia\",\n  \"anoPublicacao\": 2019,\n  \"edicao\": \"Edição especial\",\n  \"descricao\": \"Romance brasileiro\",\n  \"urlImagemCapa\": null\n}"
+            },
+            "url": "{{baseUrl}}/api/livros/{{livroId}}"
+          }
+        },
+        {
+          "name": "Buscar livros com ordenação padrão (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/livros/busca?titulo=a"
+          }
+        },
+        {
+          "name": "Buscar livros em ordem decrescente (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/livros/busca?titulo=a&sort=titulo,desc"
+          }
+        },
+        {
+          "name": "Listar livros (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/livros"
+          }
+        },
+        {
+          "name": "Excluir livro (204)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/livros/{{livroId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Bibliotecas",
+      "item": [
+        {
+          "name": "Incluir biblioteca (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "pm.collectionVariables.set('bibliotecaId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Biblioteca Centro\",\n  \"cpfCnpj\": \"98765432000110\",\n  \"email\": \"centro@biblioteca.com\",\n  \"telefone\": \"2133334444\",\n  \"endereco\": {\n    \"cep\": \"20040002\",\n    \"logradouro\": \"Rua da Assembleia\",\n    \"numero\": \"10\",\n    \"complemento\": null,\n    \"bairro\": \"Centro\",\n    \"cidade\": \"Rio de Janeiro\",\n    \"uf\": \"RJ\",\n    \"latitude\": -22.9068,\n    \"longitude\": -43.1729\n  }\n}"
+            },
+            "url": "{{baseUrl}}/api/bibliotecas"
+          }
+        },
+        {
+          "name": "Obter biblioteca por ID (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/bibliotecas/{{bibliotecaId}}"
+          }
+        },
+        {
+          "name": "Alterar biblioteca (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nome\": \"Biblioteca Centro Renovada\",\n  \"cpfCnpj\": \"98765432000110\",\n  \"email\": \"centro@biblioteca.com\",\n  \"telefone\": \"2133335555\",\n  \"endereco\": {\n    \"cep\": \"20040002\",\n    \"logradouro\": \"Rua da Assembleia\",\n    \"numero\": \"10\",\n    \"complemento\": \"Sala 2\",\n    \"bairro\": \"Centro\",\n    \"cidade\": \"Rio de Janeiro\",\n    \"uf\": \"RJ\",\n    \"latitude\": -22.9068,\n    \"longitude\": -43.1729\n  }\n}"
+            },
+            "url": "{{baseUrl}}/api/bibliotecas/{{bibliotecaId}}"
+          }
+        },
+        {
+          "name": "Buscar bibliotecas com ordenação padrão (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/bibliotecas/busca?nome=Biblioteca"
+          }
+        },
+        {
+          "name": "Buscar bibliotecas em ordem decrescente (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/bibliotecas/busca?nome=Biblioteca&sort=nome,desc"
+          }
+        },
+        {
+          "name": "Listar bibliotecas (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/bibliotecas"
+          }
+        },
+        {
+          "name": "Excluir biblioteca (204)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/bibliotecas/{{bibliotecaId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Usuários",
+      "item": [
+        {
+          "name": "Incluir usuário (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "pm.collectionVariables.set('usuarioId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomeCompleto\": \"João Pereira\",\n  \"dataNascimento\": \"1990-10-10\",\n  \"login\": \"joao.pereira\",\n  \"email\": \"joao@email.com\",\n  \"senhaHash\": \"hash-joao\",\n  \"tipoUsuario\": \"LEITOR\",\n  \"bibliotecaId\": null\n}"
+            },
+            "url": "{{baseUrl}}/api/usuarios"
+          }
+        },
+        {
+          "name": "Obter usuário por ID (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/usuarios/{{usuarioId}}"
+          }
+        },
+        {
+          "name": "Alterar usuário (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"nomeCompleto\": \"João Pereira da Silva\",\n  \"dataNascimento\": \"1990-10-10\",\n  \"login\": \"joao.pereira\",\n  \"email\": \"joao@email.com\",\n  \"senhaHash\": \"hash-joao-atualizado\",\n  \"tipoUsuario\": \"LEITOR\",\n  \"bibliotecaId\": null\n}"
+            },
+            "url": "{{baseUrl}}/api/usuarios/{{usuarioId}}"
+          }
+        },
+        {
+          "name": "Buscar usuários com ordenação padrão (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/usuarios/busca?nome=a"
+          }
+        },
+        {
+          "name": "Buscar usuários em ordem decrescente (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/usuarios/busca?nome=a&sort=nomeCompleto,desc"
+          }
+        },
+        {
+          "name": "Listar usuários (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/usuarios"
+          }
+        },
+        {
+          "name": "Excluir usuário (204)",
+          "request": {
+            "method": "DELETE",
+            "url": "{{baseUrl}}/api/usuarios/{{usuarioId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Erros representativos",
+      "item": [
+        {
+          "name": "Livro inexistente (404)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/livros/999999"
+          }
+        },
+        {
+          "name": "Livro com dados inválidos (400)",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"titulo\": \"\",\n  \"isbn13\": null\n}"
+            },
+            "url": "{{baseUrl}}/api/livros"
+          }
+        },
+        {
+          "name": "Busca com texto vazio (400)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/livros/busca?titulo="
+          }
+        }
+      ]
+    }
+  ]
+}

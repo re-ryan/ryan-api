@@ -1,6 +1,7 @@
 package br.com.infnet.bibliotecafacil.dominio;
 
 import jakarta.persistence.CascadeType;
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,8 +19,11 @@ public class Biblioteca {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false, unique = true)
     private String nome;
+    @Column(nullable = false, unique = true)
     private String cpfCnpj;
+    @Column(nullable = false, unique = true)
     private String email;
     private String telefone;
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)

@@ -1,5 +1,6 @@
 package br.com.infnet.bibliotecafacil.dominio;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -12,7 +13,9 @@ public class Autor {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @Column(nullable = false, unique = true)
     private String nome;
+    @Column(nullable = false)
     private String nomeCatalogacao;
     private boolean ativo = true;
     private LocalDateTime dataCriacao = LocalDateTime.now();

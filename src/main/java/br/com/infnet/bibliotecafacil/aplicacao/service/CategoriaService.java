@@ -8,9 +8,11 @@ import br.com.infnet.bibliotecafacil.infraestrutura.repository.CategoriaReposito
 import java.util.List;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public final class CategoriaService {
+@Transactional(readOnly = true)
+public class CategoriaService {
 
     private static final Sort ORDENACAO_PADRAO = Sort.by(Sort.Direction.ASC, "nome");
 
@@ -20,23 +22,21 @@ public final class CategoriaService {
         this.categoriaRepository = categoriaRepository;
     }
 
+    @Transactional
     public Categoria incluir(final Categoria categoria) {
-        this.validarCamposObrigatorios(categoria);
-        if (categoria.getId() != null) {
-            throw new DadosInvalidosException("O identificador da categoria deve ser gerado pelo banco de dados.");
-        }
-        this.validarNomeDisponivel(categoria);
+        this.validarCategoria(categoria);
         return this.categoriaRepository.save(categoria);
     }
 
+    @Transactional
     public Categoria alterar(final Categoria categoria) {
-        this.validarCamposObrigatorios(categoria);
+        this.validarCategoria(categoria);
         final Categoria categoriaPersistida = this.obterPorId(categoria.getId());
-        this.validarNomeDisponivel(categoria);
         categoriaPersistida.atualizarDados(categoria.getNome(), categoria.getDescricao());
         return this.categoriaRepository.save(categoriaPersistida);
     }
 
+    @Transactional
     public void excluir(final Long id) {
         final Categoria categoria = this.obterPorId(id);
         this.categoriaRepository.delete(categoria);
@@ -77,21 +77,19 @@ public final class CategoriaService {
                 .toList();
     }
 
-    private void validarCamposObrigatorios(final Categoria categoria) {
+    private void validarCategoria(final Categoria categoria) {
         if (categoria == null) {
             throw new DadosInvalidosException("A categoria é obrigatória.");
         }
         if (categoria.getNome() == null || categoria.getNome().isBlank()) {
             throw new DadosInvalidosException("O nome da categoria é obrigatório.");
         }
-    }
 
-    private void validarNomeDisponivel(final Categoria categoria) {
-        final boolean nomeEmUso = categoria.getId() == null
+        final boolean categoriaEmUso = categoria.getId() == null
                 ? this.categoriaRepository.existsByNomeIgnoreCase(categoria.getNome())
                 : this.categoriaRepository.existsByNomeIgnoreCaseAndIdNot(
                         categoria.getNome(), categoria.getId());
-        if (nomeEmUso) {
+        if (categoriaEmUso) {
             throw new OperacaoNaoPermitidaException("Já existe uma categoria com o nome informado.");
         }
     }

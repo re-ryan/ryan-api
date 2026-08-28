@@ -47,12 +47,10 @@ class UsuarioServiceTest {
 
     @Test
     public void naoDeveAceitarDadosInvalidos() {
-        final Leitor comId = this.criarLeitor(1L, "Ana Souza", "ana.souza", "ana@email.com");
         final Leitor semNome = this.criarLeitor(null, " ", "ana.souza", "ana@email.com");
 
         assertAll(
                 () -> assertThrows(DadosInvalidosException.class, () -> this.usuarioService.incluir(null)),
-                () -> assertThrows(DadosInvalidosException.class, () -> this.usuarioService.incluir(comId)),
                 () -> assertThrows(DadosInvalidosException.class, () -> this.usuarioService.incluir(semNome)),
                 () -> assertThrows(DadosInvalidosException.class, () -> this.usuarioService.filtrarPorTipo(null)));
     }

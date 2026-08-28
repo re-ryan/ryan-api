@@ -43,12 +43,10 @@ class LivroServiceTest {
 
     @Test
     public void naoDeveAceitarDadosInvalidos() {
-        final Livro comId = this.criarLivro(1L, "Dom Casmurro", "9788535902778");
         final Livro semTitulo = this.criarLivro(null, " ", "9788535902778");
 
         assertAll(
                 () -> assertThrows(DadosInvalidosException.class, () -> this.livroService.incluir(null)),
-                () -> assertThrows(DadosInvalidosException.class, () -> this.livroService.incluir(comId)),
                 () -> assertThrows(DadosInvalidosException.class, () -> this.livroService.incluir(semTitulo)),
                 () -> assertThrows(DadosInvalidosException.class, () -> this.livroService.buscarPorTitulo(" ")));
     }

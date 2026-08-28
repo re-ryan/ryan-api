@@ -8,9 +8,11 @@ import br.com.infnet.bibliotecafacil.infraestrutura.repository.BibliotecaReposit
 import java.util.List;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public final class BibliotecaService {
+@Transactional(readOnly = true)
+public class BibliotecaService {
 
     private static final Sort ORDENACAO_PADRAO = Sort.by(Sort.Direction.ASC, "nome");
 
@@ -20,23 +22,21 @@ public final class BibliotecaService {
         this.bibliotecaRepository = bibliotecaRepository;
     }
 
+    @Transactional
     public Biblioteca incluir(final Biblioteca biblioteca) {
-        this.validarCamposObrigatorios(biblioteca);
-        if (biblioteca.getId() != null) {
-            throw new DadosInvalidosException("O identificador da biblioteca deve ser gerado pelo banco de dados.");
-        }
-        this.validarDadosUnicos(biblioteca);
+        this.validarBiblioteca(biblioteca);
         return this.bibliotecaRepository.save(biblioteca);
     }
 
+    @Transactional
     public Biblioteca alterar(final Biblioteca biblioteca) {
-        this.validarCamposObrigatorios(biblioteca);
+        this.validarBiblioteca(biblioteca);
         final Biblioteca bibliotecaPersistida = this.obterPorId(biblioteca.getId());
-        this.validarDadosUnicos(biblioteca);
         bibliotecaPersistida.atualizarDados(biblioteca);
         return this.bibliotecaRepository.save(bibliotecaPersistida);
     }
 
+    @Transactional
     public void excluir(final Long id) {
         final Biblioteca biblioteca = this.obterPorId(id);
         this.bibliotecaRepository.delete(biblioteca);
@@ -77,26 +77,28 @@ public final class BibliotecaService {
                 .toList();
     }
 
-    private void validarCamposObrigatorios(final Biblioteca biblioteca) {
+    private void validarBiblioteca(final Biblioteca biblioteca) {
         if (biblioteca == null) {
             throw new DadosInvalidosException("A biblioteca é obrigatória.");
         }
+
         if (biblioteca.getNome() == null || biblioteca.getNome().isBlank()) {
             throw new DadosInvalidosException("O nome da biblioteca é obrigatório.");
         }
+
         if (biblioteca.getCpfCnpj() == null || biblioteca.getCpfCnpj().isBlank()) {
             throw new DadosInvalidosException("O CPF ou CNPJ da biblioteca é obrigatório.");
         }
+
         if (biblioteca.getEmail() == null || biblioteca.getEmail().isBlank()) {
             throw new DadosInvalidosException("O e-mail da biblioteca é obrigatório.");
         }
-    }
 
-    private void validarDadosUnicos(final Biblioteca biblioteca) {
         final boolean nomeEmUso = biblioteca.getId() == null
                 ? this.bibliotecaRepository.existsByNomeIgnoreCase(biblioteca.getNome())
                 : this.bibliotecaRepository.existsByNomeIgnoreCaseAndIdNot(
                         biblioteca.getNome(), biblioteca.getId());
+
         if (nomeEmUso) {
             throw new OperacaoNaoPermitidaException("Já existe uma biblioteca com o nome informado.");
         }

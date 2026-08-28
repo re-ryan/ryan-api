@@ -45,14 +45,12 @@ class CategoriaServiceTest {
 
     @Test
     public void naoDeveAceitarDadosInvalidosOuNomeDuplicado() {
-        final Categoria comId = this.criarCategoria(1L, "Romance");
         final Categoria semNome = this.criarCategoria(null, " ");
         this.categoriaService.incluir(this.criarCategoria(null, "Romance"));
         final Categoria nomeDuplicado = this.criarCategoria(null, "ROMANCE");
 
         assertAll(
                 () -> assertThrows(DadosInvalidosException.class, () -> this.categoriaService.incluir(null)),
-                () -> assertThrows(DadosInvalidosException.class, () -> this.categoriaService.incluir(comId)),
                 () -> assertThrows(DadosInvalidosException.class, () -> this.categoriaService.incluir(semNome)),
                 () -> assertThrows(OperacaoNaoPermitidaException.class, () -> this.categoriaService.incluir(nomeDuplicado)));
     }

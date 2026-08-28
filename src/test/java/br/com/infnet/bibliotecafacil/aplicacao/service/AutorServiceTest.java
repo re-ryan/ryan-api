@@ -45,7 +45,6 @@ class AutorServiceTest {
 
     @Test
     public void naoDeveAceitarDadosInvalidosOuNomeDuplicado() {
-        final Autor comId = this.criarAutor(1L, "Machado de Assis");
         final Autor semNome = this.criarAutor(null, " ");
         final Autor machado = this.criarAutor(null, "Machado de Assis");
         this.autorService.incluir(machado);
@@ -53,7 +52,6 @@ class AutorServiceTest {
 
         assertAll(
                 () -> assertThrows(DadosInvalidosException.class, () -> this.autorService.incluir(null)),
-                () -> assertThrows(DadosInvalidosException.class, () -> this.autorService.incluir(comId)),
                 () -> assertThrows(DadosInvalidosException.class, () -> this.autorService.incluir(semNome)),
                 () -> assertThrows(OperacaoNaoPermitidaException.class, () -> this.autorService.incluir(nomeDuplicado)));
     }

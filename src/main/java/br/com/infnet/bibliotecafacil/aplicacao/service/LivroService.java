@@ -8,9 +8,11 @@ import br.com.infnet.bibliotecafacil.infraestrutura.repository.LivroRepository;
 import java.util.List;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public final class LivroService {
+@Transactional(readOnly = true)
+public class LivroService {
 
     private static final Sort ORDENACAO_PADRAO = Sort.by(Sort.Direction.ASC, "titulo");
 
@@ -20,23 +22,21 @@ public final class LivroService {
         this.livroRepository = livroRepository;
     }
 
+    @Transactional
     public Livro incluir(final Livro livro) {
-        this.validarCamposObrigatorios(livro);
-        if (livro.getId() != null) {
-            throw new DadosInvalidosException("O identificador do livro deve ser gerado pelo banco de dados.");
-        }
-        this.validarIsbnsDisponiveis(livro);
+        this.validarLivro(livro);
         return this.livroRepository.save(livro);
     }
 
+    @Transactional
     public Livro alterar(final Livro livro) {
-        this.validarCamposObrigatorios(livro);
+        this.validarLivro(livro);
         final Livro livroPersistido = this.obterPorId(livro.getId());
-        this.validarIsbnsDisponiveis(livro);
         livroPersistido.atualizarDados(livro);
         return this.livroRepository.save(livroPersistido);
     }
 
+    @Transactional
     public void excluir(final Long id) {
         final Livro livro = this.obterPorId(id);
         this.livroRepository.delete(livro);
@@ -77,7 +77,7 @@ public final class LivroService {
                 .toList();
     }
 
-    private void validarCamposObrigatorios(final Livro livro) {
+    private void validarLivro(final Livro livro) {
         if (livro == null) {
             throw new DadosInvalidosException("O livro é obrigatório.");
         }
@@ -87,9 +87,7 @@ public final class LivroService {
         if (livro.getIsbn13() == null || livro.getIsbn13().isBlank()) {
             throw new DadosInvalidosException("O ISBN-13 do livro é obrigatório.");
         }
-    }
 
-    private void validarIsbnsDisponiveis(final Livro livro) {
         final boolean isbn13EmUso = livro.getId() == null
                 ? this.livroRepository.existsByIsbn13(livro.getIsbn13())
                 : this.livroRepository.existsByIsbn13AndIdNot(livro.getIsbn13(), livro.getId());

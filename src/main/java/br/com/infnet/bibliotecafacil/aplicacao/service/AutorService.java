@@ -8,9 +8,11 @@ import br.com.infnet.bibliotecafacil.infraestrutura.repository.AutorRepository;
 import java.util.List;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
-public final class AutorService {
+@Transactional(readOnly = true)
+public class AutorService {
 
     private static final Sort ORDENACAO_PADRAO = Sort.by(Sort.Direction.ASC, "nome");
 
@@ -20,23 +22,21 @@ public final class AutorService {
         this.autorRepository = autorRepository;
     }
 
+    @Transactional
     public Autor incluir(final Autor autor) {
-        this.validarCamposObrigatorios(autor);
-        if (autor.getId() != null) {
-            throw new DadosInvalidosException("O identificador do autor deve ser gerado pelo banco de dados.");
-        }
-        this.validarNomeDisponivel(autor);
+        this.validarAutor(autor);
         return this.autorRepository.save(autor);
     }
 
+    @Transactional
     public Autor alterar(final Autor autor) {
-        this.validarCamposObrigatorios(autor);
+        this.validarAutor(autor);
         final Autor autorPersistido = this.obterPorId(autor.getId());
-        this.validarNomeDisponivel(autor);
         autorPersistido.atualizarDados(autor.getNome(), autor.getNomeCatalogacao());
         return this.autorRepository.save(autorPersistido);
     }
 
+    @Transactional
     public void excluir(final Long id) {
         final Autor autor = this.obterPorId(id);
         this.autorRepository.delete(autor);
@@ -46,8 +46,7 @@ public final class AutorService {
         if (id == null) {
             throw new DadosInvalidosException("O identificador do autor é obrigatório.");
         }
-        return this.autorRepository.findById(id)
-                .orElseThrow(() -> this.criarAutorNaoEncontrado(id));
+        return this.autorRepository.findById(id).orElseThrow(() -> this.criarAutorNaoEncontrado(id));
     }
 
     public List<Autor> listar() {
@@ -77,22 +76,23 @@ public final class AutorService {
                 .toList();
     }
 
-    private void validarCamposObrigatorios(final Autor autor) {
+    private void validarAutor(final Autor autor) {
         if (autor == null) {
             throw new DadosInvalidosException("O autor é obrigatório.");
         }
+
         if (autor.getNome() == null || autor.getNome().isBlank()) {
             throw new DadosInvalidosException("O nome do autor é obrigatório.");
         }
+
         if (autor.getNomeCatalogacao() == null || autor.getNomeCatalogacao().isBlank()) {
             throw new DadosInvalidosException("O nome de catalogação do autor é obrigatório.");
         }
-    }
 
-    private void validarNomeDisponivel(final Autor autor) {
         final boolean nomeEmUso = autor.getId() == null
                 ? this.autorRepository.existsByNomeIgnoreCase(autor.getNome())
                 : this.autorRepository.existsByNomeIgnoreCaseAndIdNot(autor.getNome(), autor.getId());
+
         if (nomeEmUso) {
             throw new OperacaoNaoPermitidaException("Já existe um autor com o nome informado.");
         }

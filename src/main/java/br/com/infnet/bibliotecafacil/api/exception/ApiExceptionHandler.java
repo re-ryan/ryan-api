@@ -5,6 +5,7 @@ import br.com.infnet.bibliotecafacil.aplicacao.exception.ObjetoNaoEncontradoExce
 import br.com.infnet.bibliotecafacil.aplicacao.exception.OperacaoNaoPermitidaException;
 import java.time.LocalDateTime;
 import org.springframework.context.support.DefaultMessageSourceResolvable;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -28,6 +29,14 @@ public final class ApiExceptionHandler {
                 .findFirst()
                 .orElse("Os dados informados são inválidos.");
         return this.criarResposta(HttpStatus.BAD_REQUEST, mensagem);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<ErroApi> tratarViolacaoDeIntegridade(
+            final DataIntegrityViolationException exception) {
+        return this.criarResposta(
+                HttpStatus.BAD_REQUEST,
+                "Os dados informados violam uma restrição de integridade.");
     }
 
     @ExceptionHandler({
