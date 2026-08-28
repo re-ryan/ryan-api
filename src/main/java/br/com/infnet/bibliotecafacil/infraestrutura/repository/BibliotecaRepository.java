@@ -2,6 +2,7 @@ package br.com.infnet.bibliotecafacil.infraestrutura.repository;
 
 import br.com.infnet.bibliotecafacil.dominio.Biblioteca;
 import java.util.List;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface BibliotecaRepository extends JpaRepository<Biblioteca, Long> {
@@ -20,7 +21,5 @@ public interface BibliotecaRepository extends JpaRepository<Biblioteca, Long> {
 
     List<Biblioteca> findByAtivaTrue();
 
-    List<Biblioteca> findByNomeContainingIgnoreCase(String nome);
-
-    List<Biblioteca> findAllByOrderByNomeAsc();
+    List<Biblioteca> findByNomeContainingIgnoreCase(String nome, Sort ordenacao);
 }

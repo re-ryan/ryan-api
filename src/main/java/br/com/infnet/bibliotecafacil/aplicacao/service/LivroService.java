@@ -6,10 +6,13 @@ import br.com.infnet.bibliotecafacil.aplicacao.exception.OperacaoNaoPermitidaExc
 import br.com.infnet.bibliotecafacil.dominio.Livro;
 import br.com.infnet.bibliotecafacil.infraestrutura.repository.LivroRepository;
 import java.util.List;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
 public final class LivroService {
+
+    private static final Sort ORDENACAO_PADRAO = Sort.by(Sort.Direction.ASC, "titulo");
 
     private final LivroRepository livroRepository;
 
@@ -56,12 +59,16 @@ public final class LivroService {
     }
 
     public List<Livro> buscarPorTitulo(final String titulo) {
+        return this.buscarPorTitulo(titulo, ORDENACAO_PADRAO);
+    }
+
+    public List<Livro> buscarPorTitulo(final String titulo, final Sort ordenacao) {
         this.validarTextoDeBusca(titulo);
-        return this.livroRepository.findByTituloContainingIgnoreCase(titulo);
+        return this.livroRepository.findByTituloContainingIgnoreCase(titulo, ordenacao);
     }
 
     public List<Livro> listarOrdenadosPorTitulo() {
-        return this.livroRepository.findAllByOrderByTituloAsc();
+        return this.livroRepository.findAll(ORDENACAO_PADRAO);
     }
 
     public List<String> listarTitulos() {

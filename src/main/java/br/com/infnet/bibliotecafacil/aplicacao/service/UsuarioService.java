@@ -8,10 +8,13 @@ import br.com.infnet.bibliotecafacil.dominio.TipoUsuario;
 import br.com.infnet.bibliotecafacil.dominio.Usuario;
 import br.com.infnet.bibliotecafacil.infraestrutura.repository.UsuarioRepository;
 import java.util.List;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 @Service
 public final class UsuarioService {
+
+    private static final Sort ORDENACAO_PADRAO = Sort.by(Sort.Direction.ASC, "nomeCompleto");
 
     private final UsuarioRepository usuarioRepository;
 
@@ -70,12 +73,16 @@ public final class UsuarioService {
     }
 
     public List<Usuario> buscarPorNome(final String nome) {
+        return this.buscarPorNome(nome, ORDENACAO_PADRAO);
+    }
+
+    public List<Usuario> buscarPorNome(final String nome, final Sort ordenacao) {
         this.validarTextoDeBusca(nome);
-        return this.usuarioRepository.findByNomeCompletoContainingIgnoreCase(nome);
+        return this.usuarioRepository.findByNomeCompletoContainingIgnoreCase(nome, ordenacao);
     }
 
     public List<Usuario> listarOrdenadosPorNome() {
-        return this.usuarioRepository.findAllByOrderByNomeCompletoAsc();
+        return this.usuarioRepository.findAll(ORDENACAO_PADRAO);
     }
 
     public List<String> listarEmails() {

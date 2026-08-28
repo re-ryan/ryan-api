@@ -2,6 +2,7 @@ package br.com.infnet.bibliotecafacil.infraestrutura.repository;
 
 import br.com.infnet.bibliotecafacil.dominio.Autor;
 import java.util.List;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 public interface AutorRepository extends JpaRepository<Autor, Long> {
@@ -12,7 +13,5 @@ public interface AutorRepository extends JpaRepository<Autor, Long> {
 
     List<Autor> findByAtivoTrue();
 
-    List<Autor> findByNomeContainingIgnoreCase(String nome);
-
-    List<Autor> findAllByOrderByNomeAsc();
+    List<Autor> findByNomeContainingIgnoreCase(String nome, Sort ordenacao);
 }

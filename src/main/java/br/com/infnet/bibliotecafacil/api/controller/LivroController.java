@@ -7,6 +7,9 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
 import java.util.List;
+import org.springdoc.core.annotations.ParameterObject;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.web.SortDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -15,6 +18,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -31,6 +35,13 @@ public final class LivroController {
     @GetMapping
     public List<Livro> listar() {
         return this.livroService.listar();
+    }
+
+    @GetMapping("/busca")
+    public List<Livro> buscarPorTitulo(
+            final @RequestParam String titulo,
+            final @ParameterObject @SortDefault(sort = "titulo", direction = Sort.Direction.ASC) Sort ordenacao) {
+        return this.livroService.buscarPorTitulo(titulo, ordenacao);
     }
 
     @GetMapping("/{id}")
