@@ -2,8 +2,6 @@ package br.com.infnet.bibliotecafacil.api.controller;
 
 import br.com.infnet.bibliotecafacil.api.dto.LivroRequestDto;
 import br.com.infnet.bibliotecafacil.aplicacao.service.LivroService;
-import br.com.infnet.bibliotecafacil.dominio.Autoria;
-import br.com.infnet.bibliotecafacil.dominio.Categoria;
 import br.com.infnet.bibliotecafacil.dominio.Livro;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import java.net.URI;
@@ -42,22 +40,15 @@ public final class LivroController {
     @PostMapping
     public ResponseEntity<Livro> incluir(final @RequestBody LivroRequestDto request) {
         final Livro livro = this.criarLivro(request.id(), request);
-        this.livroService.incluir(livro);
-        return ResponseEntity.created(URI.create("/api/livros/" + livro.getId())).body(livro);
+        final Livro livroIncluido = this.livroService.incluir(livro);
+        return ResponseEntity.created(URI.create("/api/livros/" + livroIncluido.getId()))
+                .body(livroIncluido);
     }
 
     @PutMapping("/{id}")
     public Livro alterar(final @PathVariable Long id, final @RequestBody LivroRequestDto request) {
-        final Livro livroAtual = this.livroService.obterPorId(id);
         final Livro livroAlterado = this.criarLivro(id, request);
-        for (final Autoria autoria : livroAtual.getAutorias()) {
-            livroAlterado.adicionarAutor(autoria.getAutor(), autoria.getOrdem());
-        }
-        for (final Categoria categoria : livroAtual.getCategorias()) {
-            livroAlterado.adicionarCategoria(categoria);
-        }
-        this.livroService.alterar(livroAlterado);
-        return livroAlterado;
+        return this.livroService.alterar(livroAlterado);
     }
 
     @DeleteMapping("/{id}")

@@ -4,81 +4,76 @@ import br.com.infnet.bibliotecafacil.aplicacao.exception.DadosInvalidosException
 import br.com.infnet.bibliotecafacil.aplicacao.exception.ObjetoNaoEncontradoException;
 import br.com.infnet.bibliotecafacil.aplicacao.exception.OperacaoNaoPermitidaException;
 import br.com.infnet.bibliotecafacil.dominio.Biblioteca;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
+import br.com.infnet.bibliotecafacil.infraestrutura.repository.BibliotecaRepository;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import org.springframework.stereotype.Service;
 
 @Service
 public final class BibliotecaService {
 
-    private final Map<Long, Biblioteca> bibliotecas = new LinkedHashMap<>();
+    private final BibliotecaRepository bibliotecaRepository;
 
-    public void incluir(final Biblioteca biblioteca) {
-        this.validarDados(biblioteca);
-        if (this.bibliotecas.containsKey(biblioteca.getId())) {
-            throw new OperacaoNaoPermitidaException("Já existe uma biblioteca com o identificador informado.");
-        }
-        this.validarDadosUnicos(biblioteca);
-        this.bibliotecas.put(biblioteca.getId(), biblioteca);
+    public BibliotecaService(final BibliotecaRepository bibliotecaRepository) {
+        this.bibliotecaRepository = bibliotecaRepository;
     }
 
-    public void alterar(final Biblioteca biblioteca) {
-        this.validarDados(biblioteca);
-        this.validarExistencia(biblioteca.getId());
+    public Biblioteca incluir(final Biblioteca biblioteca) {
+        this.validarCamposObrigatorios(biblioteca);
+        if (biblioteca.getId() != null) {
+            throw new DadosInvalidosException("O identificador da biblioteca deve ser gerado pelo banco de dados.");
+        }
         this.validarDadosUnicos(biblioteca);
-        this.bibliotecas.put(biblioteca.getId(), biblioteca);
+        return this.bibliotecaRepository.save(biblioteca);
+    }
+
+    public Biblioteca alterar(final Biblioteca biblioteca) {
+        this.validarCamposObrigatorios(biblioteca);
+        final Biblioteca bibliotecaPersistida = this.obterPorId(biblioteca.getId());
+        this.validarDadosUnicos(biblioteca);
+        bibliotecaPersistida.atualizarDados(biblioteca);
+        return this.bibliotecaRepository.save(bibliotecaPersistida);
     }
 
     public void excluir(final Long id) {
-        this.validarId(id);
-        this.validarExistencia(id);
-        this.bibliotecas.remove(id);
+        final Biblioteca biblioteca = this.obterPorId(id);
+        this.bibliotecaRepository.delete(biblioteca);
     }
 
     public Biblioteca obterPorId(final Long id) {
-        this.validarId(id);
-        this.validarExistencia(id);
-        return this.bibliotecas.get(id);
+        if (id == null) {
+            throw new DadosInvalidosException("O identificador da biblioteca é obrigatório.");
+        }
+        return this.bibliotecaRepository.findById(id)
+                .orElseThrow(() -> this.criarBibliotecaNaoEncontrada(id));
     }
 
     public List<Biblioteca> listar() {
-        return List.copyOf(this.bibliotecas.values());
+        return List.copyOf(this.bibliotecaRepository.findAll());
     }
 
     public List<Biblioteca> listarAtivas() {
-        return this.bibliotecas.values().stream()
-                .filter(Biblioteca::isAtiva)
-                .toList();
+        return this.bibliotecaRepository.findByAtivaTrue();
     }
 
     public List<Biblioteca> buscarPorNome(final String nome) {
         this.validarTextoDeBusca(nome);
-        final String nomeNormalizado = nome.toLowerCase(Locale.ROOT);
-        return this.bibliotecas.values().stream()
-                .filter(biblioteca -> biblioteca.getNome().toLowerCase(Locale.ROOT).contains(nomeNormalizado))
-                .toList();
+        return this.bibliotecaRepository.findByNomeContainingIgnoreCase(nome);
     }
 
     public List<Biblioteca> listarOrdenadasPorNome() {
-        return this.bibliotecas.values().stream()
-                .sorted(Comparator.comparing(Biblioteca::getNome, String.CASE_INSENSITIVE_ORDER))
-                .toList();
+        return this.bibliotecaRepository.findAllByOrderByNomeAsc();
     }
 
     public List<String> listarNomes() {
-        return this.bibliotecas.values().stream()
+        return this.bibliotecaRepository.findAll().stream()
                 .map(Biblioteca::getNome)
                 .toList();
     }
 
-    private void validarDados(final Biblioteca biblioteca) {
+    private void validarCamposObrigatorios(final Biblioteca biblioteca) {
         if (biblioteca == null) {
             throw new DadosInvalidosException("A biblioteca é obrigatória.");
         }
-        this.validarId(biblioteca.getId());
         if (biblioteca.getNome() == null || biblioteca.getNome().isBlank()) {
             throw new DadosInvalidosException("O nome da biblioteca é obrigatório.");
         }
@@ -90,36 +85,27 @@ public final class BibliotecaService {
         }
     }
 
-    private void validarId(final Long id) {
-        if (id == null) {
-            throw new DadosInvalidosException("O identificador da biblioteca é obrigatório.");
-        }
-    }
-
-    private void validarExistencia(final Long id) {
-        if (!this.bibliotecas.containsKey(id)) {
-            throw new ObjetoNaoEncontradoException("Biblioteca não encontrada para o identificador %s.".formatted(id));
-        }
-    }
-
     private void validarDadosUnicos(final Biblioteca biblioteca) {
-        final boolean nomeEmUso = this.bibliotecas.values().stream()
-                .anyMatch(bibliotecaAtual -> !bibliotecaAtual.getId().equals(biblioteca.getId())
-                        && bibliotecaAtual.getNome().equalsIgnoreCase(biblioteca.getNome()));
+        final boolean nomeEmUso = biblioteca.getId() == null
+                ? this.bibliotecaRepository.existsByNomeIgnoreCase(biblioteca.getNome())
+                : this.bibliotecaRepository.existsByNomeIgnoreCaseAndIdNot(
+                        biblioteca.getNome(), biblioteca.getId());
         if (nomeEmUso) {
             throw new OperacaoNaoPermitidaException("Já existe uma biblioteca com o nome informado.");
         }
 
-        final boolean cpfCnpjEmUso = this.bibliotecas.values().stream()
-                .anyMatch(bibliotecaAtual -> !bibliotecaAtual.getId().equals(biblioteca.getId())
-                        && bibliotecaAtual.getCpfCnpj().equals(biblioteca.getCpfCnpj()));
+        final boolean cpfCnpjEmUso = biblioteca.getId() == null
+                ? this.bibliotecaRepository.existsByCpfCnpj(biblioteca.getCpfCnpj())
+                : this.bibliotecaRepository.existsByCpfCnpjAndIdNot(
+                        biblioteca.getCpfCnpj(), biblioteca.getId());
         if (cpfCnpjEmUso) {
             throw new OperacaoNaoPermitidaException("Já existe uma biblioteca com o CPF ou CNPJ informado.");
         }
 
-        final boolean emailEmUso = this.bibliotecas.values().stream()
-                .anyMatch(bibliotecaAtual -> !bibliotecaAtual.getId().equals(biblioteca.getId())
-                        && bibliotecaAtual.getEmail().equalsIgnoreCase(biblioteca.getEmail()));
+        final boolean emailEmUso = biblioteca.getId() == null
+                ? this.bibliotecaRepository.existsByEmailIgnoreCase(biblioteca.getEmail())
+                : this.bibliotecaRepository.existsByEmailIgnoreCaseAndIdNot(
+                        biblioteca.getEmail(), biblioteca.getId());
         if (emailEmUso) {
             throw new OperacaoNaoPermitidaException("Já existe uma biblioteca com o e-mail informado.");
         }
@@ -129,6 +115,11 @@ public final class BibliotecaService {
         if (nome == null || nome.isBlank()) {
             throw new DadosInvalidosException("O nome para busca é obrigatório.");
         }
+    }
+
+    private ObjetoNaoEncontradoException criarBibliotecaNaoEncontrada(final Long id) {
+        return new ObjetoNaoEncontradoException(
+                "Biblioteca não encontrada para o identificador %s.".formatted(id));
     }
 
 }

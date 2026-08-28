@@ -1,19 +1,34 @@
 package br.com.infnet.bibliotecafacil.dominio;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.DiscriminatorColumn;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.Inheritance;
+import jakarta.persistence.InheritanceType;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+@Entity
+@Inheritance(strategy = InheritanceType.SINGLE_TABLE)
+@DiscriminatorColumn(name = "classe_usuario")
 public abstract class Usuario {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nomeCompleto;
     private LocalDate dataNascimento;
     private String login;
     private String email;
     private String senhaHash;
+    @Enumerated(EnumType.STRING)
     private TipoUsuario tipoUsuario;
-    private final LocalDateTime dataCriacao = LocalDateTime.now();
+    private LocalDateTime dataCriacao = LocalDateTime.now();
     private boolean ativo = true;
     private LocalDateTime dataAtualizacao = this.dataCriacao;
 
@@ -46,6 +61,16 @@ public abstract class Usuario {
             throw new NullPointerException("O tipo de usuário é obrigatório.");
         }
         this.tipoUsuario = tipoUsuario;
+    }
+
+    public void atualizarDados(final Usuario usuario) {
+        this.nomeCompleto = usuario.nomeCompleto;
+        this.dataNascimento = usuario.dataNascimento;
+        this.login = usuario.login;
+        this.email = usuario.email;
+        this.senhaHash = usuario.senhaHash;
+        this.tipoUsuario = usuario.tipoUsuario;
+        this.atualizarDataAtualizacao();
     }
 
     public void ativar() {

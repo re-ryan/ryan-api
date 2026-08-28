@@ -4,81 +4,76 @@ import br.com.infnet.bibliotecafacil.aplicacao.exception.DadosInvalidosException
 import br.com.infnet.bibliotecafacil.aplicacao.exception.ObjetoNaoEncontradoException;
 import br.com.infnet.bibliotecafacil.aplicacao.exception.OperacaoNaoPermitidaException;
 import br.com.infnet.bibliotecafacil.dominio.Livro;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
+import br.com.infnet.bibliotecafacil.infraestrutura.repository.LivroRepository;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import org.springframework.stereotype.Service;
 
 @Service
 public final class LivroService {
 
-    private final Map<Long, Livro> livros = new LinkedHashMap<>();
+    private final LivroRepository livroRepository;
 
-    public void incluir(final Livro livro) {
-        this.validarDados(livro);
-        if (this.livros.containsKey(livro.getId())) {
-            throw new OperacaoNaoPermitidaException("Já existe um livro com o identificador informado.");
-        }
-        this.validarIsbnsDisponiveis(livro);
-        this.livros.put(livro.getId(), livro);
+    public LivroService(final LivroRepository livroRepository) {
+        this.livroRepository = livroRepository;
     }
 
-    public void alterar(final Livro livro) {
-        this.validarDados(livro);
-        this.validarExistencia(livro.getId());
+    public Livro incluir(final Livro livro) {
+        this.validarCamposObrigatorios(livro);
+        if (livro.getId() != null) {
+            throw new DadosInvalidosException("O identificador do livro deve ser gerado pelo banco de dados.");
+        }
         this.validarIsbnsDisponiveis(livro);
-        this.livros.put(livro.getId(), livro);
+        return this.livroRepository.save(livro);
+    }
+
+    public Livro alterar(final Livro livro) {
+        this.validarCamposObrigatorios(livro);
+        final Livro livroPersistido = this.obterPorId(livro.getId());
+        this.validarIsbnsDisponiveis(livro);
+        livroPersistido.atualizarDados(livro);
+        return this.livroRepository.save(livroPersistido);
     }
 
     public void excluir(final Long id) {
-        this.validarId(id);
-        this.validarExistencia(id);
-        this.livros.remove(id);
+        final Livro livro = this.obterPorId(id);
+        this.livroRepository.delete(livro);
     }
 
     public Livro obterPorId(final Long id) {
-        this.validarId(id);
-        this.validarExistencia(id);
-        return this.livros.get(id);
+        if (id == null) {
+            throw new DadosInvalidosException("O identificador do livro é obrigatório.");
+        }
+        return this.livroRepository.findById(id)
+                .orElseThrow(() -> this.criarLivroNaoEncontrado(id));
     }
 
     public List<Livro> listar() {
-        return List.copyOf(this.livros.values());
+        return List.copyOf(this.livroRepository.findAll());
     }
 
     public List<Livro> listarAtivos() {
-        return this.livros.values().stream()
-                .filter(Livro::isAtivo)
-                .toList();
+        return this.livroRepository.findByAtivoTrue();
     }
 
     public List<Livro> buscarPorTitulo(final String titulo) {
         this.validarTextoDeBusca(titulo);
-        final String tituloNormalizado = titulo.toLowerCase(Locale.ROOT);
-        return this.livros.values().stream()
-                .filter(livro -> livro.getTitulo().toLowerCase(Locale.ROOT).contains(tituloNormalizado))
-                .toList();
+        return this.livroRepository.findByTituloContainingIgnoreCase(titulo);
     }
 
     public List<Livro> listarOrdenadosPorTitulo() {
-        return this.livros.values().stream()
-                .sorted(Comparator.comparing(Livro::getTitulo, String.CASE_INSENSITIVE_ORDER))
-                .toList();
+        return this.livroRepository.findAllByOrderByTituloAsc();
     }
 
     public List<String> listarTitulos() {
-        return this.livros.values().stream()
+        return this.livroRepository.findAll().stream()
                 .map(Livro::getTitulo)
                 .toList();
     }
 
-    private void validarDados(final Livro livro) {
+    private void validarCamposObrigatorios(final Livro livro) {
         if (livro == null) {
             throw new DadosInvalidosException("O livro é obrigatório.");
         }
-        this.validarId(livro.getId());
         if (livro.getTitulo() == null || livro.getTitulo().isBlank()) {
             throw new DadosInvalidosException("O título do livro é obrigatório.");
         }
@@ -87,22 +82,10 @@ public final class LivroService {
         }
     }
 
-    private void validarId(final Long id) {
-        if (id == null) {
-            throw new DadosInvalidosException("O identificador do livro é obrigatório.");
-        }
-    }
-
-    private void validarExistencia(final Long id) {
-        if (!this.livros.containsKey(id)) {
-            throw new ObjetoNaoEncontradoException("Livro não encontrado para o identificador %s.".formatted(id));
-        }
-    }
-
     private void validarIsbnsDisponiveis(final Livro livro) {
-        final boolean isbn13EmUso = this.livros.values().stream()
-                .anyMatch(livroAtual -> !livroAtual.getId().equals(livro.getId())
-                        && livroAtual.getIsbn13().equals(livro.getIsbn13()));
+        final boolean isbn13EmUso = livro.getId() == null
+                ? this.livroRepository.existsByIsbn13(livro.getIsbn13())
+                : this.livroRepository.existsByIsbn13AndIdNot(livro.getIsbn13(), livro.getId());
         if (isbn13EmUso) {
             throw new OperacaoNaoPermitidaException("Já existe um livro com o ISBN-13 informado.");
         }
@@ -110,9 +93,9 @@ public final class LivroService {
         if (livro.getIsbn10() == null) {
             return;
         }
-        final boolean isbn10EmUso = this.livros.values().stream()
-                .anyMatch(livroAtual -> !livroAtual.getId().equals(livro.getId())
-                        && livro.getIsbn10().equals(livroAtual.getIsbn10()));
+        final boolean isbn10EmUso = livro.getId() == null
+                ? this.livroRepository.existsByIsbn10(livro.getIsbn10())
+                : this.livroRepository.existsByIsbn10AndIdNot(livro.getIsbn10(), livro.getId());
         if (isbn10EmUso) {
             throw new OperacaoNaoPermitidaException("Já existe um livro com o ISBN-10 informado.");
         }
@@ -122,6 +105,10 @@ public final class LivroService {
         if (titulo == null || titulo.isBlank()) {
             throw new DadosInvalidosException("O título para busca é obrigatório.");
         }
+    }
+
+    private ObjetoNaoEncontradoException criarLivroNaoEncontrado(final Long id) {
+        return new ObjetoNaoEncontradoException("Livro não encontrado para o identificador %s.".formatted(id));
     }
 
 }

@@ -2,7 +2,7 @@ package br.com.infnet.bibliotecafacil.aplicacao.service;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import br.com.infnet.bibliotecafacil.aplicacao.exception.DadosInvalidosException;
@@ -11,50 +11,56 @@ import br.com.infnet.bibliotecafacil.aplicacao.exception.OperacaoNaoPermitidaExc
 import br.com.infnet.bibliotecafacil.dominio.Livro;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
+@DataJpaTest
+@Import(LivroService.class)
 class LivroServiceTest {
 
-    private final LivroService livroService = new LivroService();
+    @Autowired
+    private LivroService livroService;
 
     @Test
     public void deveExecutarOperacoesCrud() {
-        final Livro livro = this.criarLivro(1L, "Dom Casmurro", "9788535902778");
-        this.livroService.incluir(livro);
+        final Livro livro = this.livroService.incluir(
+                this.criarLivro(null, "Dom Casmurro", "9788535902778"));
+        final Long id = livro.getId();
 
-        assertSame(livro, this.livroService.obterPorId(1L));
+        assertNotNull(id);
+        assertEquals(livro, this.livroService.obterPorId(id));
         assertEquals(List.of(livro), this.livroService.listar());
 
-        final Livro livroAlterado = this.criarLivro(1L, "Dom Casmurro - edição especial", "9788535902778");
-        this.livroService.alterar(livroAlterado);
-        assertSame(livroAlterado, this.livroService.obterPorId(1L));
+        final Livro livroAlterado = this.criarLivro(id, "Dom Casmurro - edição especial", "9788535902778");
+        final Livro livroSalvo = this.livroService.alterar(livroAlterado);
+        assertEquals("Dom Casmurro - edição especial", livroSalvo.getTitulo());
+        assertEquals("Dom Casmurro - edição especial", this.livroService.obterPorId(id).getTitulo());
 
-        this.livroService.excluir(1L);
+        this.livroService.excluir(id);
         assertEquals(List.of(), this.livroService.listar());
     }
 
     @Test
     public void naoDeveAceitarDadosInvalidos() {
-        final Livro semId = this.criarLivro(null, "Dom Casmurro", "9788535902778");
-        final Livro semTitulo = this.criarLivro(1L, " ", "9788535902778");
+        final Livro comId = this.criarLivro(1L, "Dom Casmurro", "9788535902778");
+        final Livro semTitulo = this.criarLivro(null, " ", "9788535902778");
 
         assertAll(
                 () -> assertThrows(DadosInvalidosException.class, () -> this.livroService.incluir(null)),
-                () -> assertThrows(DadosInvalidosException.class, () -> this.livroService.incluir(semId)),
+                () -> assertThrows(DadosInvalidosException.class, () -> this.livroService.incluir(comId)),
                 () -> assertThrows(DadosInvalidosException.class, () -> this.livroService.incluir(semTitulo)),
                 () -> assertThrows(DadosInvalidosException.class, () -> this.livroService.buscarPorTitulo(" ")));
     }
 
     @Test
-    public void naoDeveAceitarIdentificadorOuIsbnDuplicado() {
-        final Livro livro = this.criarLivro(1L, "Dom Casmurro", "9788535902778");
+    public void naoDeveAceitarIsbnDuplicado() {
+        final Livro livro = this.criarLivro(null, "Dom Casmurro", "9788535902778");
         this.livroService.incluir(livro);
 
-        final Livro idDuplicado = this.criarLivro(1L, "A Hora da Estrela", "9788532508126");
-        final Livro isbnDuplicado = this.criarLivro(2L, "Outra edição", "9788535902778");
+        final Livro isbnDuplicado = this.criarLivro(null, "Outra edição", "9788535902778");
 
-        assertAll(
-                () -> assertThrows(OperacaoNaoPermitidaException.class, () -> this.livroService.incluir(idDuplicado)),
-                () -> assertThrows(OperacaoNaoPermitidaException.class, () -> this.livroService.incluir(isbnDuplicado)));
+        assertThrows(OperacaoNaoPermitidaException.class, () -> this.livroService.incluir(isbnDuplicado));
     }
 
     @Test
@@ -69,8 +75,8 @@ class LivroServiceTest {
 
     @Test
     public void deveFiltrarBuscarOrdenarETransformarLivros() {
-        final Livro domCasmurro = this.criarLivro(1L, "Dom Casmurro", "9788535902778");
-        final Livro aHoraDaEstrela = this.criarLivro(2L, "A Hora da Estrela", "9788532508126");
+        final Livro domCasmurro = this.criarLivro(null, "Dom Casmurro", "9788535902778");
+        final Livro aHoraDaEstrela = this.criarLivro(null, "A Hora da Estrela", "9788532508126");
         domCasmurro.desativar();
         this.livroService.incluir(domCasmurro);
         this.livroService.incluir(aHoraDaEstrela);
@@ -84,10 +90,10 @@ class LivroServiceTest {
 
     @Test
     public void naoDeveExporAListaInterna() {
-        this.livroService.incluir(this.criarLivro(1L, "Dom Casmurro", "9788535902778"));
+        this.livroService.incluir(this.criarLivro(null, "Dom Casmurro", "9788535902778"));
 
         assertThrows(UnsupportedOperationException.class,
-                () -> this.livroService.listar().add(this.criarLivro(2L, "A Hora da Estrela", "9788532508126")));
+                () -> this.livroService.listar().add(this.criarLivro(null, "A Hora da Estrela", "9788532508126")));
     }
 
     private Livro criarLivro(final Long id, final String titulo, final String isbn13) {

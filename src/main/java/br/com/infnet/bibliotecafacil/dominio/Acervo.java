@@ -1,15 +1,28 @@
 package br.com.infnet.bibliotecafacil.dominio;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import java.time.LocalDateTime;
 
-public final class Acervo {
+@Entity
+public class Acervo {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "biblioteca_id")
     private Biblioteca biblioteca;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "livro_id")
     private Livro livro;
     private int quantidadeReal;
-    private final LocalDateTime dataCriacao = LocalDateTime.now();
+    private LocalDateTime dataCriacao = LocalDateTime.now();
     private int quantidadeDisponivel;
     private boolean ativo = true;
     private LocalDateTime dataAtualizacao = this.dataCriacao;

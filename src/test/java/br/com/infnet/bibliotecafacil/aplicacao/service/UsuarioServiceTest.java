@@ -3,7 +3,7 @@ package br.com.infnet.bibliotecafacil.aplicacao.service;
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import br.com.infnet.bibliotecafacil.aplicacao.exception.DadosInvalidosException;
@@ -15,45 +15,54 @@ import br.com.infnet.bibliotecafacil.dominio.TipoUsuario;
 import br.com.infnet.bibliotecafacil.dominio.Usuario;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
+@DataJpaTest
+@Import(UsuarioService.class)
 class UsuarioServiceTest {
 
-    private final UsuarioService usuarioService = new UsuarioService();
+    @Autowired
+    private UsuarioService usuarioService;
 
     @Test
     public void deveExecutarOperacoesCrudComPolimorfismo() {
-        final Leitor leitor = this.criarLeitor(1L, "Ana Souza", "ana.souza", "ana@email.com");
-        this.usuarioService.incluir(leitor);
+        final Leitor leitor = (Leitor) this.usuarioService.incluir(
+                this.criarLeitor(null, "Ana Souza", "ana.souza", "ana@email.com"));
+        final Long id = leitor.getId();
 
-        assertSame(leitor, this.usuarioService.obterPorId(1L));
-        assertInstanceOf(Leitor.class, this.usuarioService.obterPorId(1L));
+        assertNotNull(id);
+        assertEquals(leitor, this.usuarioService.obterPorId(id));
+        assertInstanceOf(Leitor.class, this.usuarioService.obterPorId(id));
 
-        final Administrador administrador = this.criarAdministrador(1L, "Ana Souza", "ana.souza", "ana@email.com");
-        this.usuarioService.alterar(administrador);
-        assertSame(administrador, this.usuarioService.obterPorId(1L));
+        final Leitor leitorAlterado = this.criarLeitor(id, "Ana Souza Lima", "ana.souza", "ana@email.com");
+        final Usuario usuarioSalvo = this.usuarioService.alterar(leitorAlterado);
+        assertEquals("Ana Souza Lima", usuarioSalvo.getNomeCompleto());
+        assertInstanceOf(Leitor.class, this.usuarioService.obterPorId(id));
 
-        this.usuarioService.excluir(1L);
+        this.usuarioService.excluir(id);
         assertEquals(List.of(), this.usuarioService.listar());
     }
 
     @Test
     public void naoDeveAceitarDadosInvalidos() {
-        final Leitor semId = this.criarLeitor(null, "Ana Souza", "ana.souza", "ana@email.com");
-        final Leitor semNome = this.criarLeitor(1L, " ", "ana.souza", "ana@email.com");
+        final Leitor comId = this.criarLeitor(1L, "Ana Souza", "ana.souza", "ana@email.com");
+        final Leitor semNome = this.criarLeitor(null, " ", "ana.souza", "ana@email.com");
 
         assertAll(
                 () -> assertThrows(DadosInvalidosException.class, () -> this.usuarioService.incluir(null)),
-                () -> assertThrows(DadosInvalidosException.class, () -> this.usuarioService.incluir(semId)),
+                () -> assertThrows(DadosInvalidosException.class, () -> this.usuarioService.incluir(comId)),
                 () -> assertThrows(DadosInvalidosException.class, () -> this.usuarioService.incluir(semNome)),
                 () -> assertThrows(DadosInvalidosException.class, () -> this.usuarioService.filtrarPorTipo(null)));
     }
 
     @Test
     public void naoDeveAceitarLoginOuEmailDuplicado() {
-        this.usuarioService.incluir(this.criarLeitor(1L, "Ana Souza", "ana.souza", "ana@email.com"));
+        this.usuarioService.incluir(this.criarLeitor(null, "Ana Souza", "ana.souza", "ana@email.com"));
 
-        final Leitor loginDuplicado = this.criarLeitor(2L, "Bruno Lima", "ANA.SOUZA", "bruno@email.com");
-        final Leitor emailDuplicado = this.criarLeitor(3L, "Carla Dias", "carla.dias", "ANA@EMAIL.COM");
+        final Leitor loginDuplicado = this.criarLeitor(null, "Bruno Lima", "ANA.SOUZA", "bruno@email.com");
+        final Leitor emailDuplicado = this.criarLeitor(null, "Carla Dias", "carla.dias", "ANA@EMAIL.COM");
 
         assertAll(
                 () -> assertThrows(OperacaoNaoPermitidaException.class, () -> this.usuarioService.incluir(loginDuplicado)),
@@ -72,8 +81,8 @@ class UsuarioServiceTest {
 
     @Test
     public void deveFiltrarBuscarOrdenarETransformarUsuarios() {
-        final Leitor ana = this.criarLeitor(1L, "Ana Souza", "ana.souza", "ana@email.com");
-        final Administrador marina = this.criarAdministrador(2L, "Marina Alves", "marina.alves", "marina@email.com");
+        final Leitor ana = this.criarLeitor(null, "Ana Souza", "ana.souza", "ana@email.com");
+        final Administrador marina = this.criarAdministrador(null, "Marina Alves", "marina.alves", "marina@email.com");
         marina.desativar();
         this.usuarioService.incluir(marina);
         this.usuarioService.incluir(ana);
@@ -88,10 +97,10 @@ class UsuarioServiceTest {
 
     @Test
     public void naoDeveExporAListaInterna() {
-        this.usuarioService.incluir(this.criarLeitor(1L, "Ana Souza", "ana.souza", "ana@email.com"));
+        this.usuarioService.incluir(this.criarLeitor(null, "Ana Souza", "ana.souza", "ana@email.com"));
 
         assertThrows(UnsupportedOperationException.class,
-                () -> this.usuarioService.listar().add(this.criarLeitor(2L, "Bruno Lima", "bruno.lima", "bruno@email.com")));
+                () -> this.usuarioService.listar().add(this.criarLeitor(null, "Bruno Lima", "bruno.lima", "bruno@email.com")));
     }
 
     private Leitor criarLeitor(final Long id, final String nome, final String login, final String email) {

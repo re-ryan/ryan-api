@@ -3,92 +3,91 @@ package br.com.infnet.bibliotecafacil.aplicacao.service;
 import br.com.infnet.bibliotecafacil.aplicacao.exception.DadosInvalidosException;
 import br.com.infnet.bibliotecafacil.aplicacao.exception.ObjetoNaoEncontradoException;
 import br.com.infnet.bibliotecafacil.aplicacao.exception.OperacaoNaoPermitidaException;
+import br.com.infnet.bibliotecafacil.dominio.Bibliotecario;
 import br.com.infnet.bibliotecafacil.dominio.TipoUsuario;
 import br.com.infnet.bibliotecafacil.dominio.Usuario;
-import java.util.Comparator;
-import java.util.LinkedHashMap;
+import br.com.infnet.bibliotecafacil.infraestrutura.repository.UsuarioRepository;
 import java.util.List;
-import java.util.Locale;
-import java.util.Map;
 import org.springframework.stereotype.Service;
 
 @Service
 public final class UsuarioService {
 
-    private final Map<Long, Usuario> usuarios = new LinkedHashMap<>();
+    private final UsuarioRepository usuarioRepository;
 
-    public void incluir(final Usuario usuario) {
-        this.validarDados(usuario);
-        if (this.usuarios.containsKey(usuario.getId())) {
-            throw new OperacaoNaoPermitidaException("Já existe um usuário com o identificador informado.");
-        }
-        this.validarDadosUnicos(usuario);
-        this.usuarios.put(usuario.getId(), usuario);
+    public UsuarioService(final UsuarioRepository usuarioRepository) {
+        this.usuarioRepository = usuarioRepository;
     }
 
-    public void alterar(final Usuario usuario) {
-        this.validarDados(usuario);
-        this.validarExistencia(usuario.getId());
+    public Usuario incluir(final Usuario usuario) {
+        this.validarCamposObrigatorios(usuario);
+        if (usuario.getId() != null) {
+            throw new DadosInvalidosException("O identificador do usuário deve ser gerado pelo banco de dados.");
+        }
         this.validarDadosUnicos(usuario);
-        this.usuarios.put(usuario.getId(), usuario);
+        return this.usuarioRepository.save(usuario);
+    }
+
+    public Usuario alterar(final Usuario usuario) {
+        this.validarCamposObrigatorios(usuario);
+        final Usuario usuarioPersistido = this.obterPorId(usuario.getId());
+        this.validarMesmoTipo(usuarioPersistido, usuario);
+        this.validarDadosUnicos(usuario);
+        usuarioPersistido.atualizarDados(usuario);
+        if (usuarioPersistido instanceof Bibliotecario bibliotecarioPersistido
+                && usuario instanceof Bibliotecario bibliotecario) {
+            bibliotecarioPersistido.setBiblioteca(bibliotecario.getBiblioteca());
+        }
+        return this.usuarioRepository.save(usuarioPersistido);
     }
 
     public void excluir(final Long id) {
-        this.validarId(id);
-        this.validarExistencia(id);
-        this.usuarios.remove(id);
+        final Usuario usuario = this.obterPorId(id);
+        this.usuarioRepository.delete(usuario);
     }
 
     public Usuario obterPorId(final Long id) {
-        this.validarId(id);
-        this.validarExistencia(id);
-        return this.usuarios.get(id);
+        if (id == null) {
+            throw new DadosInvalidosException("O identificador do usuário é obrigatório.");
+        }
+        return this.usuarioRepository.findById(id)
+                .orElseThrow(() -> this.criarUsuarioNaoEncontrado(id));
     }
 
     public List<Usuario> listar() {
-        return List.copyOf(this.usuarios.values());
+        return List.copyOf(this.usuarioRepository.findAll());
     }
 
     public List<Usuario> listarAtivos() {
-        return this.usuarios.values().stream()
-                .filter(Usuario::isAtivo)
-                .toList();
+        return this.usuarioRepository.findByAtivoTrue();
     }
 
     public List<Usuario> filtrarPorTipo(final TipoUsuario tipoUsuario) {
         if (tipoUsuario == null) {
             throw new DadosInvalidosException("O tipo de usuário para filtragem é obrigatório.");
         }
-        return this.usuarios.values().stream()
-                .filter(usuario -> usuario.getTipoUsuario() == tipoUsuario)
-                .toList();
+        return this.usuarioRepository.findByTipoUsuario(tipoUsuario);
     }
 
     public List<Usuario> buscarPorNome(final String nome) {
         this.validarTextoDeBusca(nome);
-        final String nomeNormalizado = nome.toLowerCase(Locale.ROOT);
-        return this.usuarios.values().stream()
-                .filter(usuario -> usuario.getNomeCompleto().toLowerCase(Locale.ROOT).contains(nomeNormalizado))
-                .toList();
+        return this.usuarioRepository.findByNomeCompletoContainingIgnoreCase(nome);
     }
 
     public List<Usuario> listarOrdenadosPorNome() {
-        return this.usuarios.values().stream()
-                .sorted(Comparator.comparing(Usuario::getNomeCompleto, String.CASE_INSENSITIVE_ORDER))
-                .toList();
+        return this.usuarioRepository.findAllByOrderByNomeCompletoAsc();
     }
 
     public List<String> listarEmails() {
-        return this.usuarios.values().stream()
+        return this.usuarioRepository.findAll().stream()
                 .map(Usuario::getEmail)
                 .toList();
     }
 
-    private void validarDados(final Usuario usuario) {
+    private void validarCamposObrigatorios(final Usuario usuario) {
         if (usuario == null) {
             throw new DadosInvalidosException("O usuário é obrigatório.");
         }
-        this.validarId(usuario.getId());
         if (usuario.getNomeCompleto() == null || usuario.getNomeCompleto().isBlank()) {
             throw new DadosInvalidosException("O nome completo do usuário é obrigatório.");
         }
@@ -106,29 +105,19 @@ public final class UsuarioService {
         }
     }
 
-    private void validarId(final Long id) {
-        if (id == null) {
-            throw new DadosInvalidosException("O identificador do usuário é obrigatório.");
-        }
-    }
-
-    private void validarExistencia(final Long id) {
-        if (!this.usuarios.containsKey(id)) {
-            throw new ObjetoNaoEncontradoException("Usuário não encontrado para o identificador %s.".formatted(id));
-        }
-    }
-
     private void validarDadosUnicos(final Usuario usuario) {
-        final boolean loginEmUso = this.usuarios.values().stream()
-                .anyMatch(usuarioAtual -> !usuarioAtual.getId().equals(usuario.getId())
-                        && usuarioAtual.getLogin().equalsIgnoreCase(usuario.getLogin()));
+        final boolean loginEmUso = usuario.getId() == null
+                ? this.usuarioRepository.existsByLoginIgnoreCase(usuario.getLogin())
+                : this.usuarioRepository.existsByLoginIgnoreCaseAndIdNot(
+                        usuario.getLogin(), usuario.getId());
         if (loginEmUso) {
             throw new OperacaoNaoPermitidaException("Já existe um usuário com o login informado.");
         }
 
-        final boolean emailEmUso = this.usuarios.values().stream()
-                .anyMatch(usuarioAtual -> !usuarioAtual.getId().equals(usuario.getId())
-                        && usuarioAtual.getEmail().equalsIgnoreCase(usuario.getEmail()));
+        final boolean emailEmUso = usuario.getId() == null
+                ? this.usuarioRepository.existsByEmailIgnoreCase(usuario.getEmail())
+                : this.usuarioRepository.existsByEmailIgnoreCaseAndIdNot(
+                        usuario.getEmail(), usuario.getId());
         if (emailEmUso) {
             throw new OperacaoNaoPermitidaException("Já existe um usuário com o e-mail informado.");
         }
@@ -138,6 +127,16 @@ public final class UsuarioService {
         if (nome == null || nome.isBlank()) {
             throw new DadosInvalidosException("O nome para busca é obrigatório.");
         }
+    }
+
+    private void validarMesmoTipo(final Usuario usuarioPersistido, final Usuario usuario) {
+        if (!usuarioPersistido.getClass().equals(usuario.getClass())) {
+            throw new OperacaoNaoPermitidaException("O tipo do usuário não pode ser alterado.");
+        }
+    }
+
+    private ObjetoNaoEncontradoException criarUsuarioNaoEncontrado(final Long id) {
+        return new ObjetoNaoEncontradoException("Usuário não encontrado para o identificador %s.".formatted(id));
     }
 
 }

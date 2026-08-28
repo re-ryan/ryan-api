@@ -1,11 +1,18 @@
 package br.com.infnet.bibliotecafacil.dominio;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.persistence.OneToMany;
 import java.util.ArrayList;
 import java.util.List;
 
-public final class Leitor extends Usuario {
+@Entity
+@DiscriminatorValue("LEITOR")
+public class Leitor extends Usuario {
 
-    private final List<Reserva> reservas = new ArrayList<>();
+    @OneToMany(mappedBy = "leitor", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Reserva> reservas = new ArrayList<>();
 
     public Reserva reservar(final Long idReserva, final Acervo acervo) {
         this.validarUsuarioAtivo();

@@ -38,15 +38,15 @@ public final class AutorController {
 
     @PostMapping
     public ResponseEntity<Autor> incluir(final @RequestBody Autor autor) {
-        this.autorService.incluir(autor);
-        return ResponseEntity.created(URI.create("/api/autores/" + autor.getId())).body(autor);
+        final Autor autorIncluido = this.autorService.incluir(autor);
+        return ResponseEntity.created(URI.create("/api/autores/" + autorIncluido.getId()))
+                .body(autorIncluido);
     }
 
     @PutMapping("/{id}")
     public Autor alterar(final @PathVariable Long id, final @RequestBody Autor autor) {
         autor.setId(id);
-        this.autorService.alterar(autor);
-        return autor;
+        return this.autorService.alterar(autor);
     }
 
     @DeleteMapping("/{id}")

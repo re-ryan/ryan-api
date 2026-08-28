@@ -19,9 +19,10 @@ import br.com.infnet.bibliotecafacil.dominio.TipoUsuario;
 import java.time.LocalDate;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
+import org.springframework.transaction.annotation.Transactional;
 
 @Component
-public final class BibliotecaFacilLoader implements CommandLineRunner {
+public class BibliotecaFacilLoader implements CommandLineRunner {
 
     private final AutorService autorService;
     private final BibliotecaService bibliotecaService;
@@ -38,33 +39,29 @@ public final class BibliotecaFacilLoader implements CommandLineRunner {
     }
 
     @Override
+    @Transactional
     public void run(final String... args) {
         final Autor machadoDeAssis = new Autor();
-        machadoDeAssis.setId(1L);
         machadoDeAssis.setNome("Machado de Assis");
         machadoDeAssis.setNomeCatalogacao("ASSIS, Machado de");
 
         final Autor clariceLispector = new Autor();
-        clariceLispector.setId(2L);
         clariceLispector.setNome("Clarice Lispector");
         clariceLispector.setNomeCatalogacao("LISPECTOR, Clarice");
         this.autorService.incluir(machadoDeAssis);
         this.autorService.incluir(clariceLispector);
 
         final Categoria romance = new Categoria();
-        romance.setId(1L);
         romance.setNome("Romance");
         romance.setDescricao("Narrativas de ficção em prosa.");
 
         final Categoria literaturaBrasileira = new Categoria();
-        literaturaBrasileira.setId(2L);
         literaturaBrasileira.setNome("Literatura brasileira");
         literaturaBrasileira.setDescricao("Obras publicadas por autores brasileiros.");
         this.categoriaService.incluir(romance);
         this.categoriaService.incluir(literaturaBrasileira);
 
         final Livro domCasmurro = new Livro();
-        domCasmurro.setId(3L);
         domCasmurro.setTitulo("Dom Casmurro");
         domCasmurro.setIsbn(null, "978-85-359-0277-8");
         domCasmurro.setEditora("Companhia das Letras");
@@ -76,7 +73,6 @@ public final class BibliotecaFacilLoader implements CommandLineRunner {
         domCasmurro.adicionarCategoria(literaturaBrasileira);
 
         final Livro aHoraDaEstrela = new Livro();
-        aHoraDaEstrela.setId(4L);
         aHoraDaEstrela.setTitulo("A Hora da Estrela");
         aHoraDaEstrela.setIsbn("85-325-0812-X", "9788532508126");
         aHoraDaEstrela.setEditora("Rocco");
@@ -90,7 +86,6 @@ public final class BibliotecaFacilLoader implements CommandLineRunner {
         this.livroService.incluir(aHoraDaEstrela);
 
         final Endereco endereco = new Endereco();
-        endereco.setId(1L);
         endereco.setCep("22230060");
         endereco.setLogradouro("Rua Marquês de Abrantes");
         endereco.setNumero("55");
@@ -102,18 +97,16 @@ public final class BibliotecaFacilLoader implements CommandLineRunner {
         endereco.setLongitude(-43.177787);
 
         final Biblioteca biblioteca = new Biblioteca();
-        biblioteca.setId(5L);
         biblioteca.setNome("Biblioteca Parceira Flamengo");
         biblioteca.setCpfCnpj("12345678000199");
         biblioteca.setEmail("contato@bibliotecafacil.com");
         biblioteca.setTelefone("(21) 2222-3333");
         biblioteca.setEndereco(endereco);
-        final Acervo acervoDomCasmurro = biblioteca.adicionarLivro(6L, domCasmurro, 3);
-        biblioteca.adicionarLivro(7L, aHoraDaEstrela, 2);
+        final Acervo acervoDomCasmurro = biblioteca.adicionarLivro(null, domCasmurro, 3);
+        biblioteca.adicionarLivro(null, aHoraDaEstrela, 2);
         this.bibliotecaService.incluir(biblioteca);
 
         final Leitor leitor = new Leitor();
-        leitor.setId(8L);
         leitor.setNomeCompleto("Ana Souza");
         leitor.setDataNascimento(LocalDate.of(1992, 5, 14));
         leitor.setLogin("ana.souza");
@@ -122,7 +115,6 @@ public final class BibliotecaFacilLoader implements CommandLineRunner {
         leitor.setTipoUsuario(TipoUsuario.LEITOR);
 
         final Bibliotecario bibliotecario = new Bibliotecario();
-        bibliotecario.setId(9L);
         bibliotecario.setNomeCompleto("Carlos Lima");
         bibliotecario.setDataNascimento(LocalDate.of(1985, 8, 20));
         bibliotecario.setLogin("carlos.lima");
@@ -132,17 +124,16 @@ public final class BibliotecaFacilLoader implements CommandLineRunner {
         bibliotecario.setBiblioteca(biblioteca);
 
         final Administrador administrador = new Administrador();
-        administrador.setId(10L);
         administrador.setNomeCompleto("Marina Alves");
         administrador.setDataNascimento(null);
         administrador.setLogin("marina.alves");
         administrador.setEmail("marina@bibliotecafacil.com");
         administrador.setSenhaHash("hash-seguro-marina");
         administrador.setTipoUsuario(TipoUsuario.ADMINISTRADOR);
+        final Reserva reserva = leitor.reservar(10L, acervoDomCasmurro);
         this.usuarioService.incluir(leitor);
         this.usuarioService.incluir(bibliotecario);
         this.usuarioService.incluir(administrador);
-        final Reserva reserva = leitor.reservar(10L, acervoDomCasmurro);
 
         this.apresentarBiblioteca(biblioteca);
         this.apresentarConsultas();

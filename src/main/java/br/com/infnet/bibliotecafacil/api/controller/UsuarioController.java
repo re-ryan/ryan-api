@@ -48,16 +48,15 @@ public final class UsuarioController {
     @PostMapping
     public ResponseEntity<Usuario> incluir(final @RequestBody UsuarioRequestDto request) {
         final Usuario usuario = this.criarUsuario(request.id(), request);
-        this.usuarioService.incluir(usuario);
-        return ResponseEntity.created(URI.create("/api/usuarios/" + usuario.getId())).body(usuario);
+        final Usuario usuarioIncluido = this.usuarioService.incluir(usuario);
+        return ResponseEntity.created(URI.create("/api/usuarios/" + usuarioIncluido.getId()))
+                .body(usuarioIncluido);
     }
 
     @PutMapping("/{id}")
     public Usuario alterar(final @PathVariable Long id, final @RequestBody UsuarioRequestDto request) {
-        this.usuarioService.obterPorId(id);
         final Usuario usuario = this.criarUsuario(id, request);
-        this.usuarioService.alterar(usuario);
-        return usuario;
+        return this.usuarioService.alterar(usuario);
     }
 
     @DeleteMapping("/{id}")

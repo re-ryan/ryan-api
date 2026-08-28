@@ -2,7 +2,7 @@ package br.com.infnet.bibliotecafacil.aplicacao.service;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import br.com.infnet.bibliotecafacil.aplicacao.exception.DadosInvalidosException;
@@ -11,45 +11,54 @@ import br.com.infnet.bibliotecafacil.aplicacao.exception.OperacaoNaoPermitidaExc
 import br.com.infnet.bibliotecafacil.dominio.Biblioteca;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
+@DataJpaTest
+@Import(BibliotecaService.class)
 class BibliotecaServiceTest {
 
-    private final BibliotecaService bibliotecaService = new BibliotecaService();
+    @Autowired
+    private BibliotecaService bibliotecaService;
 
     @Test
     public void deveExecutarOperacoesCrud() {
-        final Biblioteca biblioteca = this.criarBiblioteca(1L, "Biblioteca Central", "12345678000199", "central@biblioteca.com");
-        this.bibliotecaService.incluir(biblioteca);
+        final Biblioteca biblioteca = this.bibliotecaService.incluir(
+                this.criarBiblioteca(null, "Biblioteca Central", "12345678000199", "central@biblioteca.com"));
+        final Long id = biblioteca.getId();
 
-        assertSame(biblioteca, this.bibliotecaService.obterPorId(1L));
+        assertNotNull(id);
+        assertEquals(biblioteca, this.bibliotecaService.obterPorId(id));
         assertEquals(List.of(biblioteca), this.bibliotecaService.listar());
 
-        final Biblioteca bibliotecaAlterada = this.criarBiblioteca(1L, "Biblioteca Central Renovada", "12345678000199", "central@biblioteca.com");
-        this.bibliotecaService.alterar(bibliotecaAlterada);
-        assertSame(bibliotecaAlterada, this.bibliotecaService.obterPorId(1L));
+        final Biblioteca bibliotecaAlterada = this.criarBiblioteca(id, "Biblioteca Central Renovada", "12345678000199", "central@biblioteca.com");
+        final Biblioteca bibliotecaSalva = this.bibliotecaService.alterar(bibliotecaAlterada);
+        assertEquals("Biblioteca Central Renovada", bibliotecaSalva.getNome());
+        assertEquals("Biblioteca Central Renovada", this.bibliotecaService.obterPorId(id).getNome());
 
-        this.bibliotecaService.excluir(1L);
+        this.bibliotecaService.excluir(id);
         assertEquals(List.of(), this.bibliotecaService.listar());
     }
 
     @Test
     public void naoDeveAceitarDadosInvalidos() {
-        final Biblioteca semId = this.criarBiblioteca(null, "Biblioteca Central", "12345678000199", "central@biblioteca.com");
-        final Biblioteca semNome = this.criarBiblioteca(1L, " ", "12345678000199", "central@biblioteca.com");
+        final Biblioteca comId = this.criarBiblioteca(1L, "Biblioteca Central", "12345678000199", "central@biblioteca.com");
+        final Biblioteca semNome = this.criarBiblioteca(null, " ", "12345678000199", "central@biblioteca.com");
 
         assertAll(
                 () -> assertThrows(DadosInvalidosException.class, () -> this.bibliotecaService.incluir(null)),
-                () -> assertThrows(DadosInvalidosException.class, () -> this.bibliotecaService.incluir(semId)),
+                () -> assertThrows(DadosInvalidosException.class, () -> this.bibliotecaService.incluir(comId)),
                 () -> assertThrows(DadosInvalidosException.class, () -> this.bibliotecaService.incluir(semNome)));
     }
 
     @Test
     public void naoDeveAceitarDadosUnicosDuplicados() {
-        this.bibliotecaService.incluir(this.criarBiblioteca(1L, "Biblioteca Central", "12345678000199", "central@biblioteca.com"));
+        this.bibliotecaService.incluir(this.criarBiblioteca(null, "Biblioteca Central", "12345678000199", "central@biblioteca.com"));
 
-        final Biblioteca nomeDuplicado = this.criarBiblioteca(2L, "BIBLIOTECA CENTRAL", "98765432000188", "outra@biblioteca.com");
-        final Biblioteca documentoDuplicado = this.criarBiblioteca(3L, "Biblioteca Sul", "12345678000199", "sul@biblioteca.com");
-        final Biblioteca emailDuplicado = this.criarBiblioteca(4L, "Biblioteca Norte", "11222333000144", "CENTRAL@BIBLIOTECA.COM");
+        final Biblioteca nomeDuplicado = this.criarBiblioteca(null, "BIBLIOTECA CENTRAL", "98765432000188", "outra@biblioteca.com");
+        final Biblioteca documentoDuplicado = this.criarBiblioteca(null, "Biblioteca Sul", "12345678000199", "sul@biblioteca.com");
+        final Biblioteca emailDuplicado = this.criarBiblioteca(null, "Biblioteca Norte", "11222333000144", "CENTRAL@BIBLIOTECA.COM");
 
         assertAll(
                 () -> assertThrows(OperacaoNaoPermitidaException.class, () -> this.bibliotecaService.incluir(nomeDuplicado)),
@@ -69,8 +78,8 @@ class BibliotecaServiceTest {
 
     @Test
     public void deveFiltrarBuscarOrdenarETransformarBibliotecas() {
-        final Biblioteca central = this.criarBiblioteca(1L, "Biblioteca Central", "12345678000199", "central@biblioteca.com");
-        final Biblioteca bairro = this.criarBiblioteca(2L, "Biblioteca do Bairro", "98765432000188", "bairro@biblioteca.com");
+        final Biblioteca central = this.criarBiblioteca(null, "Biblioteca Central", "12345678000199", "central@biblioteca.com");
+        final Biblioteca bairro = this.criarBiblioteca(null, "Biblioteca do Bairro", "98765432000188", "bairro@biblioteca.com");
         central.desativar();
         this.bibliotecaService.incluir(central);
         this.bibliotecaService.incluir(bairro);
@@ -84,10 +93,10 @@ class BibliotecaServiceTest {
 
     @Test
     public void naoDeveExporAListaInterna() {
-        this.bibliotecaService.incluir(this.criarBiblioteca(1L, "Biblioteca Central", "12345678000199", "central@biblioteca.com"));
+        this.bibliotecaService.incluir(this.criarBiblioteca(null, "Biblioteca Central", "12345678000199", "central@biblioteca.com"));
 
         assertThrows(UnsupportedOperationException.class,
-                () -> this.bibliotecaService.listar().add(this.criarBiblioteca(2L, "Biblioteca do Bairro", "98765432000188", "bairro@biblioteca.com")));
+                () -> this.bibliotecaService.listar().add(this.criarBiblioteca(null, "Biblioteca do Bairro", "98765432000188", "bairro@biblioteca.com")));
     }
 
     private Biblioteca criarBiblioteca(final Long id, final String nome, final String cpfCnpj, final String email) {

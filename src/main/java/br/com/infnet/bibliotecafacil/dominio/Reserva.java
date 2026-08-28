@@ -1,14 +1,27 @@
 package br.com.infnet.bibliotecafacil.dominio;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import java.time.LocalDateTime;
 
-public final class Reserva {
+@Entity
+public class Reserva {
 
+    @Id
     private Long id;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "leitor_id")
     private Leitor leitor;
+    @ManyToOne(optional = false)
+    @JoinColumn(name = "acervo_id")
     private Acervo acervo;
     private LocalDateTime dataReserva;
+    @Enumerated(EnumType.STRING)
     private StatusReserva status;
 
     public void setId(final Long id) {

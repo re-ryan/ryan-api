@@ -1,9 +1,16 @@
 package br.com.infnet.bibliotecafacil.dominio;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 
-public final class Endereco {
+@Entity
+public class Endereco {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String cep;
     private String logradouro;
@@ -14,8 +21,8 @@ public final class Endereco {
     private String uf;
     private Double latitude;
     private Double longitude;
-    private final LocalDateTime dataCriacao = LocalDateTime.now();
-    private final LocalDateTime dataAtualizacao = this.dataCriacao;
+    private LocalDateTime dataCriacao = LocalDateTime.now();
+    private LocalDateTime dataAtualizacao = this.dataCriacao;
 
     public void setId(final Long id) {
         this.id = id;

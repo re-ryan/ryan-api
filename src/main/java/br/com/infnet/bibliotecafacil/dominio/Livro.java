@@ -1,26 +1,46 @@
 package br.com.infnet.bibliotecafacil.dominio;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.JoinTable;
+import jakarta.persistence.ManyToMany;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OrderBy;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
 
-public final class Livro {
+@Entity
+public class Livro {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String titulo;
     private String isbn10;
     private String isbn13;
-    private final List<Autoria> autorias = new ArrayList<>();
-    private final List<Categoria> categorias = new ArrayList<>();
+    @OneToMany(mappedBy = "livro", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OrderBy("ordem ASC")
+    private List<Autoria> autorias = new ArrayList<>();
+    @ManyToMany
+    @JoinTable(
+            name = "livro_categoria",
+            joinColumns = @JoinColumn(name = "livro_id"),
+            inverseJoinColumns = @JoinColumn(name = "categoria_id"))
+    private List<Categoria> categorias = new ArrayList<>();
     private String editora;
     private Integer anoPublicacao;
     private String edicao;
     private String descricao;
     private String urlImagemCapa;
     private boolean ativo = true;
-    private final LocalDateTime dataCriacao = LocalDateTime.now();
+    private LocalDateTime dataCriacao = LocalDateTime.now();
     private LocalDateTime dataAtualizacao = this.dataCriacao;
 
     public void setId(final Long id) {
@@ -59,6 +79,18 @@ public final class Livro {
         this.urlImagemCapa = urlImagemCapa;
     }
 
+    public void atualizarDados(final Livro livro) {
+        this.titulo = livro.titulo;
+        this.isbn10 = livro.isbn10;
+        this.isbn13 = livro.isbn13;
+        this.editora = livro.editora;
+        this.anoPublicacao = livro.anoPublicacao;
+        this.edicao = livro.edicao;
+        this.descricao = livro.descricao;
+        this.urlImagemCapa = livro.urlImagemCapa;
+        this.atualizarDataAtualizacao();
+    }
+
     public void ativar() {
         this.ativo = true;
         this.atualizarDataAtualizacao();
@@ -80,6 +112,7 @@ public final class Livro {
             throw new IllegalArgumentException("A ordem de autoria já está relacionada ao livro.");
         }
         final Autoria autoria = new Autoria();
+        autoria.setLivro(this);
         autoria.setAutor(autor);
         autoria.setOrdem(ordem);
         this.autorias.add(autoria);

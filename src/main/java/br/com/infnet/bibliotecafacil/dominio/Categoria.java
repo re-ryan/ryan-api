@@ -1,14 +1,21 @@
 package br.com.infnet.bibliotecafacil.dominio;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
 import java.time.LocalDateTime;
 
-public final class Categoria {
+@Entity
+public class Categoria {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nome;
     private String descricao;
     private boolean ativa = true;
-    private final LocalDateTime dataCriacao = LocalDateTime.now();
+    private LocalDateTime dataCriacao = LocalDateTime.now();
     private LocalDateTime dataAtualizacao = this.dataCriacao;
 
     public void setId(final Long id) {
@@ -21,6 +28,12 @@ public final class Categoria {
 
     public void setDescricao(final String descricao) {
         this.descricao = descricao;
+    }
+
+    public void atualizarDados(final String nome, final String descricao) {
+        this.nome = nome;
+        this.descricao = descricao;
+        this.atualizarDataAtualizacao();
     }
 
     public void ativar() {

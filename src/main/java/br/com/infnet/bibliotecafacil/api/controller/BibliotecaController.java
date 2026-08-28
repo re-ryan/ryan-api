@@ -38,15 +38,15 @@ public final class BibliotecaController {
 
     @PostMapping
     public ResponseEntity<Biblioteca> incluir(final @RequestBody Biblioteca biblioteca) {
-        this.bibliotecaService.incluir(biblioteca);
-        return ResponseEntity.created(URI.create("/api/bibliotecas/" + biblioteca.getId())).body(biblioteca);
+        final Biblioteca bibliotecaIncluida = this.bibliotecaService.incluir(biblioteca);
+        return ResponseEntity.created(URI.create("/api/bibliotecas/" + bibliotecaIncluida.getId()))
+                .body(bibliotecaIncluida);
     }
 
     @PutMapping("/{id}")
     public Biblioteca alterar(final @PathVariable Long id, final @RequestBody Biblioteca biblioteca) {
         biblioteca.setId(id);
-        this.bibliotecaService.alterar(biblioteca);
-        return biblioteca;
+        return this.bibliotecaService.alterar(biblioteca);
     }
 
     @DeleteMapping("/{id}")

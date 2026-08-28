@@ -2,47 +2,58 @@ package br.com.infnet.bibliotecafacil.aplicacao.service;
 
 import static org.junit.jupiter.api.Assertions.assertAll;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import br.com.infnet.bibliotecafacil.aplicacao.exception.DadosInvalidosException;
 import br.com.infnet.bibliotecafacil.aplicacao.exception.ObjetoNaoEncontradoException;
 import br.com.infnet.bibliotecafacil.aplicacao.exception.OperacaoNaoPermitidaException;
 import br.com.infnet.bibliotecafacil.dominio.Autor;
+import java.time.LocalDateTime;
 import java.util.List;
 import org.junit.jupiter.api.Test;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.context.annotation.Import;
 
+@DataJpaTest
+@Import(AutorService.class)
 class AutorServiceTest {
 
-    private final AutorService autorService = new AutorService();
+    @Autowired
+    private AutorService autorService;
 
     @Test
     public void deveExecutarOperacoesCrud() {
-        final Autor autor = this.criarAutor(1L, "Machado de Assis");
-        this.autorService.incluir(autor);
+        final Autor autor = this.autorService.incluir(this.criarAutor(null, "Machado de Assis"));
+        final Long id = autor.getId();
 
-        assertSame(autor, this.autorService.obterPorId(1L));
+        assertNotNull(id);
+        assertEquals(autor, this.autorService.obterPorId(id));
         assertEquals(List.of(autor), this.autorService.listar());
 
-        final Autor autorAlterado = this.criarAutor(1L, "Joaquim Maria Machado de Assis");
-        this.autorService.alterar(autorAlterado);
-        assertSame(autorAlterado, this.autorService.obterPorId(1L));
+        final LocalDateTime dataCriacao = autor.getDataCriacao();
+        final Autor autorAlterado = this.criarAutor(id, "Joaquim Maria Machado de Assis");
+        final Autor autorSalvo = this.autorService.alterar(autorAlterado);
+        assertEquals("Joaquim Maria Machado de Assis", autorSalvo.getNome());
+        assertEquals(dataCriacao, autorSalvo.getDataCriacao());
+        assertEquals("Joaquim Maria Machado de Assis", this.autorService.obterPorId(id).getNome());
 
-        this.autorService.excluir(1L);
+        this.autorService.excluir(id);
         assertEquals(List.of(), this.autorService.listar());
     }
 
     @Test
     public void naoDeveAceitarDadosInvalidosOuNomeDuplicado() {
-        final Autor semId = this.criarAutor(null, "Machado de Assis");
-        final Autor semNome = this.criarAutor(1L, " ");
-        final Autor machado = this.criarAutor(1L, "Machado de Assis");
+        final Autor comId = this.criarAutor(1L, "Machado de Assis");
+        final Autor semNome = this.criarAutor(null, " ");
+        final Autor machado = this.criarAutor(null, "Machado de Assis");
         this.autorService.incluir(machado);
-        final Autor nomeDuplicado = this.criarAutor(2L, "MACHADO DE ASSIS");
+        final Autor nomeDuplicado = this.criarAutor(null, "MACHADO DE ASSIS");
 
         assertAll(
                 () -> assertThrows(DadosInvalidosException.class, () -> this.autorService.incluir(null)),
-                () -> assertThrows(DadosInvalidosException.class, () -> this.autorService.incluir(semId)),
+                () -> assertThrows(DadosInvalidosException.class, () -> this.autorService.incluir(comId)),
                 () -> assertThrows(DadosInvalidosException.class, () -> this.autorService.incluir(semNome)),
                 () -> assertThrows(OperacaoNaoPermitidaException.class, () -> this.autorService.incluir(nomeDuplicado)));
     }
@@ -59,8 +70,8 @@ class AutorServiceTest {
 
     @Test
     public void deveFiltrarBuscarOrdenarETransformarAutores() {
-        final Autor machado = this.criarAutor(1L, "Machado de Assis");
-        final Autor clarice = this.criarAutor(2L, "Clarice Lispector");
+        final Autor machado = this.criarAutor(null, "Machado de Assis");
+        final Autor clarice = this.criarAutor(null, "Clarice Lispector");
         machado.desativar();
         this.autorService.incluir(machado);
         this.autorService.incluir(clarice);
@@ -74,10 +85,10 @@ class AutorServiceTest {
 
     @Test
     public void naoDeveExporAListaInterna() {
-        this.autorService.incluir(this.criarAutor(1L, "Machado de Assis"));
+        this.autorService.incluir(this.criarAutor(null, "Machado de Assis"));
 
         assertThrows(UnsupportedOperationException.class,
-                () -> this.autorService.listar().add(this.criarAutor(2L, "Clarice Lispector")));
+                () -> this.autorService.listar().add(this.criarAutor(null, "Clarice Lispector")));
     }
 
     private Autor criarAutor(final Long id, final String nome) {

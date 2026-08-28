@@ -1,7 +1,16 @@
 package br.com.infnet.bibliotecafacil.dominio;
 
-public final class Bibliotecario extends Usuario {
+import jakarta.persistence.DiscriminatorValue;
+import jakarta.persistence.Entity;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 
+@Entity
+@DiscriminatorValue("BIBLIOTECARIO")
+public class Bibliotecario extends Usuario {
+
+    @ManyToOne
+    @JoinColumn(name = "biblioteca_id")
     private Biblioteca biblioteca;
 
     public void setBiblioteca(final Biblioteca biblioteca) {

@@ -1,20 +1,32 @@
 package br.com.infnet.bibliotecafacil.dominio;
 
+import jakarta.persistence.CascadeType;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public final class Biblioteca {
+@Entity
+public class Biblioteca {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     private String nome;
     private String cpfCnpj;
     private String email;
     private String telefone;
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private Endereco endereco;
-    private final LocalDateTime dataCriacao = LocalDateTime.now();
-    private final List<Acervo> acervos = new ArrayList<>();
+    private LocalDateTime dataCriacao = LocalDateTime.now();
+    @OneToMany(mappedBy = "biblioteca", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Acervo> acervos = new ArrayList<>();
     private boolean ativa = true;
     private LocalDateTime dataAtualizacao = this.dataCriacao;
 
@@ -45,6 +57,15 @@ public final class Biblioteca {
         this.endereco = endereco;
     }
 
+    public void atualizarDados(final Biblioteca biblioteca) {
+        this.nome = biblioteca.nome;
+        this.cpfCnpj = biblioteca.cpfCnpj;
+        this.email = biblioteca.email;
+        this.telefone = biblioteca.telefone;
+        this.endereco = biblioteca.endereco;
+        this.atualizarDataAtualizacao();
+    }
+
     public Acervo adicionarLivro(final Long idAcervo, final Livro livro, final int quantidadeReal) {
         return this.adicionarLivro(idAcervo, livro, quantidadeReal, quantidadeReal);
     }
@@ -54,7 +75,7 @@ public final class Biblioteca {
         if (livro == null) {
             throw new NullPointerException("O livro é obrigatório.");
         }
-        if (this.contemAcervoComId(idAcervo)) {
+        if (idAcervo != null && this.contemAcervoComId(idAcervo)) {
             throw new IllegalArgumentException("O identificador do acervo já está em uso nesta biblioteca.");
         }
         if (this.localizarAcervo(livro).isPresent()) {
@@ -62,7 +83,9 @@ public final class Biblioteca {
         }
 
         final Acervo acervo = new Acervo();
-        acervo.setId(idAcervo);
+        if (idAcervo != null) {
+            acervo.setId(idAcervo);
+        }
         acervo.setBiblioteca(this);
         acervo.setLivro(livro);
         acervo.setQuantidadeReal(quantidadeReal);

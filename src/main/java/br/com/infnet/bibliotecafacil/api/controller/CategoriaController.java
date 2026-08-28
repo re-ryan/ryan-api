@@ -38,15 +38,15 @@ public final class CategoriaController {
 
     @PostMapping
     public ResponseEntity<Categoria> incluir(final @RequestBody Categoria categoria) {
-        this.categoriaService.incluir(categoria);
-        return ResponseEntity.created(URI.create("/api/categorias/" + categoria.getId())).body(categoria);
+        final Categoria categoriaIncluida = this.categoriaService.incluir(categoria);
+        return ResponseEntity.created(URI.create("/api/categorias/" + categoriaIncluida.getId()))
+                .body(categoriaIncluida);
     }
 
     @PutMapping("/{id}")
     public Categoria alterar(final @PathVariable Long id, final @RequestBody Categoria categoria) {
         categoria.setId(id);
-        this.categoriaService.alterar(categoria);
-        return categoria;
+        return this.categoriaService.alterar(categoria);
     }
 
     @DeleteMapping("/{id}")
