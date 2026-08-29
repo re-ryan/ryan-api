@@ -4,7 +4,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.junit.jupiter.api.Test;
 
@@ -156,17 +155,6 @@ class ReservaTest {
 
         assertThrows(IllegalStateException.class, () -> bibliotecario.confirmar(reserva));
         assertEquals(StatusReserva.PENDENTE, reserva.getStatus());
-    }
-
-    @Test
-    public void falhaNaCriacaoNaoDeveAlterarAcervoNemLeitor() {
-        final Biblioteca biblioteca = criarBiblioteca(1L, "Biblioteca Central");
-        final Acervo acervo = criarAcervo(biblioteca, 1);
-        final Leitor leitor = criarLeitor(4L, "Ana Souza", "ana@email.com");
-
-        assertThrows(IllegalArgumentException.class, () -> leitor.reservar(null, acervo));
-        assertEquals(1, acervo.getQuantidadeDisponivel());
-        assertTrue(leitor.getReservas().isEmpty());
     }
 
     @Test

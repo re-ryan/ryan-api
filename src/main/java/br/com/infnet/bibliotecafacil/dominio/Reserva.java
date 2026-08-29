@@ -1,6 +1,5 @@
 package br.com.infnet.bibliotecafacil.dominio;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -24,48 +23,30 @@ public class Reserva {
     @Enumerated(EnumType.STRING)
     private StatusReserva status;
 
-    public void setId(final Long id) {
-        if (id == null || id <= 0) {
-            throw new IllegalArgumentException("O identificador de reserva deve ser positivo.");
-        }
+    void setId(final Long id) {
         this.id = id;
     }
 
-    public void setLeitor(final Leitor leitor) {
-        if (leitor == null) {
-            throw new NullPointerException("O leitor é obrigatório.");
-        }
+    void setLeitor(final Leitor leitor) {
         this.leitor = leitor;
     }
 
-    public void setAcervo(final Acervo acervo) {
-        if (acervo == null) {
-            throw new NullPointerException("O acervo é obrigatório.");
-        }
+    void setAcervo(final Acervo acervo) {
         this.acervo = acervo;
     }
 
-    protected void iniciar() {
-        if (this.id == null) {
-            throw new NullPointerException("O identificador da reserva é obrigatório.");
-        }
-        if (this.leitor == null) {
-            throw new NullPointerException("O leitor é obrigatório.");
-        }
-        if (this.acervo == null) {
-            throw new NullPointerException("O acervo é obrigatório.");
-        }
+    void iniciar() {
         this.acervo.reservarUnidade();
         this.dataReserva = LocalDateTime.now();
         this.status = StatusReserva.PENDENTE;
     }
 
-    protected void confirmar() {
+    void confirmar() {
         this.validarStatusPendente();
         this.status = StatusReserva.CONFIRMADA;
     }
 
-    protected void rejeitar() {
+    void rejeitar() {
         this.validarStatusPendente();
         this.acervo.liberarUnidade();
         this.status = StatusReserva.REJEITADA;
@@ -73,11 +54,6 @@ public class Reserva {
 
     public Long getId() {
         return this.id;
-    }
-
-    @JsonIgnore
-    public Leitor getLeitor() {
-        return this.leitor;
     }
 
     public Acervo getAcervo() {

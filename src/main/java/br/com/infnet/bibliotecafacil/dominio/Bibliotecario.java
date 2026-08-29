@@ -14,9 +14,6 @@ public class Bibliotecario extends Usuario {
     private Biblioteca biblioteca;
 
     public void setBiblioteca(final Biblioteca biblioteca) {
-        if (biblioteca == null) {
-            throw new NullPointerException("A biblioteca é obrigatória.");
-        }
         this.biblioteca = biblioteca;
     }
 

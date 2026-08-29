@@ -111,6 +111,9 @@ public class Livro {
         if (autor == null) {
             throw new NullPointerException("O autor é obrigatório.");
         }
+        if (ordem <= 0) {
+            throw new IllegalArgumentException("A ordem de autoria deve ser positiva.");
+        }
         if (this.contemAutor(autor)) {
             throw new IllegalArgumentException("O autor já está relacionado ao livro.");
         }

@@ -55,9 +55,6 @@ public class Biblioteca {
     }
 
     public void setEndereco(final Endereco endereco) {
-        if (endereco == null) {
-            throw new NullPointerException("O endereço é obrigatório.");
-        }
         this.endereco = endereco;
     }
 
@@ -79,6 +76,7 @@ public class Biblioteca {
         if (livro == null) {
             throw new NullPointerException("O livro é obrigatório.");
         }
+        this.validarQuantidades(quantidadeReal, quantidadeDisponivel);
         if (idAcervo != null && this.contemAcervoComId(idAcervo)) {
             throw new IllegalArgumentException("O identificador do acervo já está em uso nesta biblioteca.");
         }
@@ -181,6 +179,16 @@ public class Biblioteca {
     private void validarBibliotecaAtiva() {
         if (!this.ativa) {
             throw new IllegalStateException("A biblioteca precisa estar ativa para realizar esta operação.");
+        }
+    }
+
+    private void validarQuantidades(final int quantidadeReal, final int quantidadeDisponivel) {
+        if (quantidadeReal <= 0) {
+            throw new IllegalArgumentException("A quantidade real do acervo deve ser positiva.");
+        }
+        if (quantidadeDisponivel < 0 || quantidadeDisponivel > quantidadeReal) {
+            throw new IllegalArgumentException(
+                    "A quantidade disponível deve estar entre zero e a quantidade real.");
         }
     }
 

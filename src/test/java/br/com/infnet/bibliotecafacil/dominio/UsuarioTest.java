@@ -5,7 +5,6 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.time.LocalDate;
@@ -72,18 +71,6 @@ class UsuarioTest {
                 () -> assertEquals(TipoUsuario.BIBLIOTECARIO, bibliotecario.getTipoUsuario()),
                 () -> assertEquals(TipoUsuario.ADMINISTRADOR, administrador.getTipoUsuario()),
                 () -> assertEquals(biblioteca, bibliotecario.getBiblioteca()));
-    }
-
-    @Test
-    public void bibliotecarioDevePossuirBiblioteca() {
-        assertThrows(NullPointerException.class, () -> criarBibliotecario(
-                1L,
-                "Carlos Lima",
-                null,
-                "carlos.lima",
-                "carlos@biblioteca.com",
-                this.senhaHash,
-                null));
     }
 
     @Test

@@ -27,41 +27,23 @@ public class Acervo {
     private boolean ativo = true;
     private LocalDateTime dataAtualizacao = this.dataCriacao;
 
-    public void setId(final Long id) {
-        if (id == null || id <= 0) {
-            throw new IllegalArgumentException("O identificador de acervo deve ser positivo.");
-        }
+    void setId(final Long id) {
         this.id = id;
     }
 
-    public void setBiblioteca(final Biblioteca biblioteca) {
-        if (biblioteca == null) {
-            throw new NullPointerException("A biblioteca é obrigatória.");
-        }
+    void setBiblioteca(final Biblioteca biblioteca) {
         this.biblioteca = biblioteca;
     }
 
-    public void setLivro(final Livro livro) {
-        if (livro == null) {
-            throw new NullPointerException("O livro é obrigatório.");
-        }
+    void setLivro(final Livro livro) {
         this.livro = livro;
     }
 
-    public void setQuantidadeReal(final int quantidadeReal) {
-        if (quantidadeReal <= 0) {
-            throw new IllegalArgumentException("A quantidade real do acervo deve ser positiva.");
-        }
-        if (this.quantidadeDisponivel > quantidadeReal) {
-            throw new IllegalArgumentException("A quantidade disponível não pode superar a quantidade real.");
-        }
+    void setQuantidadeReal(final int quantidadeReal) {
         this.quantidadeReal = quantidadeReal;
     }
 
-    public void setQuantidadeDisponivel(final int quantidadeDisponivel) {
-        if (quantidadeDisponivel < 0 || quantidadeDisponivel > this.quantidadeReal) {
-            throw new IllegalArgumentException("A quantidade disponível deve estar entre zero e a quantidade real.");
-        }
+    void setQuantidadeDisponivel(final int quantidadeDisponivel) {
         this.quantidadeDisponivel = quantidadeDisponivel;
     }
 

@@ -22,24 +22,15 @@ public class Autoria {
     private Autor autor;
     private int ordem;
 
-    public void setLivro(final Livro livro) {
-        if (livro == null) {
-            throw new NullPointerException("O livro é obrigatório.");
-        }
+    void setLivro(final Livro livro) {
         this.livro = livro;
     }
 
-    public void setAutor(final Autor autor) {
-        if (autor == null) {
-            throw new NullPointerException("O autor é obrigatório.");
-        }
+    void setAutor(final Autor autor) {
         this.autor = autor;
     }
 
-    public void setOrdem(final int ordem) {
-        if (ordem <= 0) {
-            throw new IllegalArgumentException("A ordem de autoria deve ser positiva.");
-        }
+    void setOrdem(final int ordem) {
         this.ordem = ordem;
     }
 

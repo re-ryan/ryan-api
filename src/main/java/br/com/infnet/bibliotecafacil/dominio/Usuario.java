@@ -63,9 +63,6 @@ public abstract class Usuario {
     }
 
     public void setTipoUsuario(final TipoUsuario tipoUsuario) {
-        if (tipoUsuario == null) {
-            throw new NullPointerException("O tipo de usuário é obrigatório.");
-        }
         this.tipoUsuario = tipoUsuario;
     }
 
