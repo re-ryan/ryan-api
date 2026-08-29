@@ -1,8 +1,10 @@
 package br.com.infnet.bibliotecafacil.api.controller;
 
 import br.com.infnet.bibliotecafacil.api.dto.LivroRequestDto;
+import br.com.infnet.bibliotecafacil.aplicacao.service.CadastroLivroService;
 import br.com.infnet.bibliotecafacil.aplicacao.service.LivroService;
 import br.com.infnet.bibliotecafacil.dominio.Livro;
+import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import java.net.URI;
@@ -26,9 +28,13 @@ import org.springframework.web.bind.annotation.RestController;
 @Tag(name = "Livros")
 public final class LivroController {
 
+    private final CadastroLivroService cadastroLivroService;
     private final LivroService livroService;
 
-    public LivroController(final LivroService livroService) {
+    public LivroController(
+            final CadastroLivroService cadastroLivroService,
+            final LivroService livroService) {
+        this.cadastroLivroService = cadastroLivroService;
         this.livroService = livroService;
     }
 
@@ -50,9 +56,13 @@ public final class LivroController {
     }
 
     @PostMapping
+    @Operation(summary = "Inclui um livro",
+            description = "Consulta o ISBN na BrasilAPI antes do cadastro. Se houver dados externos, "
+                    + "eles substituem os dados correspondentes; se a consulta falhar ou não encontrar o ISBN, "
+                    + "o cadastro segue normalmente com os dados da requisição.")
     public ResponseEntity<Livro> incluir(final @Valid @RequestBody LivroRequestDto request) {
         final Livro livro = this.criarLivro(request);
-        final Livro livroIncluido = this.livroService.incluir(livro);
+        final Livro livroIncluido = this.cadastroLivroService.incluir(livro);
         return ResponseEntity.created(URI.create("/api/livros/" + livroIncluido.getId()))
                 .body(livroIncluido);
     }

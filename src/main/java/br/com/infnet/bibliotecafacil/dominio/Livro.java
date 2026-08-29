@@ -41,7 +41,9 @@ public class Livro {
     private String editora;
     private Integer anoPublicacao;
     private String edicao;
+    @Column(length = 4000)
     private String descricao;
+    @Column(length = 1000)
     private String urlImagemCapa;
     private boolean ativo = true;
     private LocalDateTime dataCriacao = LocalDateTime.now();

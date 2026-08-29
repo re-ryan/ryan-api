@@ -47,7 +47,7 @@ public class CategoriaService {
             throw new DadosInvalidosException("O identificador da categoria é obrigatório.");
         }
         return this.categoriaRepository.findById(id)
-                .orElseThrow(() -> this.criarCategoriaNaoEncontrada(id));
+                .orElseThrow(() -> new ObjetoNaoEncontradoException("Categoria não encontrada para o identificador %s.".formatted(id)));
     }
 
     public List<Categoria> listar() {
@@ -98,10 +98,6 @@ public class CategoriaService {
         if (nome == null || nome.isBlank()) {
             throw new DadosInvalidosException("O nome para busca é obrigatório.");
         }
-    }
-
-    private ObjetoNaoEncontradoException criarCategoriaNaoEncontrada(final Long id) {
-        return new ObjetoNaoEncontradoException("Categoria não encontrada para o identificador %s.".formatted(id));
     }
 
 }

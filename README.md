@@ -1,6 +1,6 @@
 # Biblioteca Fácil
 
-Projeto acadêmico desenvolvido em Java 21 com Spring Boot, Spring Data JPA e Maven para a pós-graduação do Infnet.
+Projeto acadêmico desenvolvido em Java 21 com Spring Boot, Spring Data JPA, Spring Cloud OpenFeign e Maven para a pós-graduação do Infnet.
 
 ## Contexto
 
@@ -14,12 +14,14 @@ A aplicação segue o fluxo:
 
 ~~~text
 Cliente HTTP → Controller → Service → Repository → H2
+                                └→ OpenFeign → BrasilAPI
 ~~~
 
 - **Controller:** recebe as requisições HTTP e delega as operações.
 - **Service:** concentra validações, regras da aplicação e limites transacionais.
 - **Repository:** utiliza Spring Data JPA para acessar o banco.
 - **H2:** mantém os dados em memória durante a execução.
+- **OpenFeign:** realiza a comunicação HTTP declarativa com a BrasilAPI.
 
 ## Requisitos
 
@@ -59,7 +61,21 @@ Os recursos principais são:
 - **/api/bibliotecas**
 - **/api/usuarios**
 
-Cada recurso disponibiliza inclusão, alteração, exclusão, listagem e obtenção por identificador. Os identificadores são gerados automaticamente pelo banco e não devem ser enviados nos corpos de POST.
+Os cinco recursos persistentes disponibilizam inclusão, alteração, exclusão, listagem e obtenção por identificador. Os identificadores são gerados automaticamente pelo banco e não devem ser enviados nos corpos de POST.
+
+## Integração de livros por ISBN
+
+No cadastro de um livro, a aplicação utiliza Spring Cloud OpenFeign para consultar o ISBN-13 na BrasilAPI:
+
+~~~http
+POST /api/livros
+~~~
+
+Quando o ISBN é encontrado, título, editora, ano de publicação, descrição e URL da capa retornados pelo serviço externo substituem os respectivos dados da requisição. Campos ausentes na resposta externa preservam os valores informados pelo cliente.
+
+O ISBN e a edição são sempre mantidos conforme a requisição. Autores e categorias também não são alterados pela consulta, pois são relacionamentos administrados separadamente pela aplicação.
+
+Se o ISBN não for encontrado ou a BrasilAPI estiver indisponível, o cadastro continua normalmente com os dados recebidos. A URL do serviço e os tempos máximos de conexão e leitura estão configurados em `application.properties`. Alterações de livros continuam manuais e não realizam uma nova consulta externa.
 
 ## Busca e ordenação
 

@@ -47,7 +47,7 @@ public class BibliotecaService {
             throw new DadosInvalidosException("O identificador da biblioteca é obrigatório.");
         }
         return this.bibliotecaRepository.findById(id)
-                .orElseThrow(() -> this.criarBibliotecaNaoEncontrada(id));
+                .orElseThrow(() -> new ObjetoNaoEncontradoException("Biblioteca não encontrada para o identificador %s.".formatted(id)));
     }
 
     public List<Biblioteca> listar() {
@@ -124,11 +124,6 @@ public class BibliotecaService {
         if (nome == null || nome.isBlank()) {
             throw new DadosInvalidosException("O nome para busca é obrigatório.");
         }
-    }
-
-    private ObjetoNaoEncontradoException criarBibliotecaNaoEncontrada(final Long id) {
-        return new ObjetoNaoEncontradoException(
-                "Biblioteca não encontrada para o identificador %s.".formatted(id));
     }
 
 }

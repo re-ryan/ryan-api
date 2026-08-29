@@ -47,7 +47,7 @@ public class LivroService {
             throw new DadosInvalidosException("O identificador do livro é obrigatório.");
         }
         return this.livroRepository.findById(id)
-                .orElseThrow(() -> this.criarLivroNaoEncontrado(id));
+                .orElseThrow(() -> new ObjetoNaoEncontradoException("Livro não encontrado para o identificador %s.".formatted(id)));
     }
 
     public List<Livro> listar() {
@@ -111,9 +111,4 @@ public class LivroService {
             throw new DadosInvalidosException("O título para busca é obrigatório.");
         }
     }
-
-    private ObjetoNaoEncontradoException criarLivroNaoEncontrado(final Long id) {
-        return new ObjetoNaoEncontradoException("Livro não encontrado para o identificador %s.".formatted(id));
-    }
-
 }

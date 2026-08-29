@@ -46,7 +46,7 @@ public class AutorService {
         if (id == null) {
             throw new DadosInvalidosException("O identificador do autor é obrigatório.");
         }
-        return this.autorRepository.findById(id).orElseThrow(() -> this.criarAutorNaoEncontrado(id));
+        return this.autorRepository.findById(id).orElseThrow(() -> new ObjetoNaoEncontradoException("Autor não encontrado para o identificador %s.".formatted(id)));
     }
 
     public List<Autor> listar() {
@@ -102,10 +102,6 @@ public class AutorService {
         if (nome == null || nome.isBlank()) {
             throw new DadosInvalidosException("O nome para busca é obrigatório.");
         }
-    }
-
-    private ObjetoNaoEncontradoException criarAutorNaoEncontrado(final Long id) {
-        return new ObjetoNaoEncontradoException("Autor não encontrado para o identificador %s.".formatted(id));
     }
 
 }

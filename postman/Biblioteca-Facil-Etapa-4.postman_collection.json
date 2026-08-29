@@ -1,7 +1,7 @@
 {
   "info": {
     "name": "Biblioteca Fácil - Etapa 4",
-    "description": "Requisições da API REST com persistência JPA, validação e consultas ordenadas. Execute a coleção na ordem apresentada.",
+    "description": "Requisições da API REST com persistência JPA, validação, consultas ordenadas e enriquecimento de livros por ISBN com a BrasilAPI. Execute a coleção na ordem apresentada.",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
   },
   "variable": [
@@ -221,7 +221,7 @@
       "name": "Livros",
       "item": [
         {
-          "name": "Incluir livro (201)",
+          "name": "Incluir livro com consulta por ISBN (201)",
           "event": [
             {
               "listen": "test",
@@ -244,7 +244,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"titulo\": \"Torto Arado\",\n  \"isbn10\": null,\n  \"isbn13\": \"9786580309313\",\n  \"editora\": \"Todavia\",\n  \"anoPublicacao\": 2019,\n  \"edicao\": \"1ª edição\",\n  \"descricao\": \"Romance brasileiro\",\n  \"urlImagemCapa\": null\n}"
+              "raw": "{\n  \"titulo\": \"Livro informado manualmente\",\n  \"isbn10\": null,\n  \"isbn13\": \"9788545702870\",\n  \"editora\": \"Editora informada manualmente\",\n  \"anoPublicacao\": 2000,\n  \"edicao\": \"1ª edição\",\n  \"descricao\": \"Descrição utilizada se a consulta externa não retornar dados.\",\n  \"urlImagemCapa\": null\n}"
             },
             "url": "{{baseUrl}}/api/livros"
           }
@@ -268,7 +268,7 @@
             ],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"titulo\": \"Torto Arado - edição especial\",\n  \"isbn10\": null,\n  \"isbn13\": \"9786580309313\",\n  \"editora\": \"Todavia\",\n  \"anoPublicacao\": 2019,\n  \"edicao\": \"Edição especial\",\n  \"descricao\": \"Romance brasileiro\",\n  \"urlImagemCapa\": null\n}"
+              "raw": "{\n  \"titulo\": \"Akira - edição especial\",\n  \"isbn10\": null,\n  \"isbn13\": \"9788545702870\",\n  \"editora\": \"JBC\",\n  \"anoPublicacao\": 2017,\n  \"edicao\": \"Edição especial\",\n  \"descricao\": \"Dados alterados manualmente, sem nova consulta externa.\",\n  \"urlImagemCapa\": null\n}"
             },
             "url": "{{baseUrl}}/api/livros/{{livroId}}"
           }

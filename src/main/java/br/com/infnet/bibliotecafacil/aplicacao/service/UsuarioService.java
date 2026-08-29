@@ -34,12 +34,7 @@ public class UsuarioService {
     public Usuario alterar(final Usuario usuario) {
         this.validarUsuario(usuario);
         final Usuario usuarioPersistido = this.obterPorId(usuario.getId());
-        this.validarMesmoTipo(usuarioPersistido, usuario);
         usuarioPersistido.atualizarDados(usuario);
-        if (usuarioPersistido instanceof Bibliotecario bibliotecarioPersistido
-                && usuario instanceof Bibliotecario bibliotecario) {
-            bibliotecarioPersistido.setBiblioteca(bibliotecario.getBiblioteca());
-        }
         return this.usuarioRepository.save(usuarioPersistido);
     }
 
@@ -53,7 +48,7 @@ public class UsuarioService {
         if (id == null) {
             throw new DadosInvalidosException("O identificador do usuário é obrigatório.");
         }
-        return this.usuarioRepository.findById(id).orElseThrow(() -> this.criarUsuarioNaoEncontrado(id));
+        return this.usuarioRepository.findById(id).orElseThrow(() -> new ObjetoNaoEncontradoException("Usuário não encontrado para o identificador %s.".formatted(id)));
     }
 
     public List<Usuario> listar() {
@@ -136,16 +131,6 @@ public class UsuarioService {
         if (nome == null || nome.isBlank()) {
             throw new DadosInvalidosException("O nome para busca é obrigatório.");
         }
-    }
-
-    private void validarMesmoTipo(final Usuario usuarioPersistido, final Usuario usuario) {
-        if (!usuarioPersistido.getClass().equals(usuario.getClass())) {
-            throw new OperacaoNaoPermitidaException("O tipo do usuário não pode ser alterado.");
-        }
-    }
-
-    private ObjetoNaoEncontradoException criarUsuarioNaoEncontrado(final Long id) {
-        return new ObjetoNaoEncontradoException("Usuário não encontrado para o identificador %s.".formatted(id));
     }
 
 }
