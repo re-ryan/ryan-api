@@ -130,7 +130,7 @@ public class BibliotecaFacilLoader implements CommandLineRunner {
         administrador.setEmail("marina@bibliotecafacil.com");
         administrador.setSenhaHash("hash-seguro-marina");
         administrador.setTipoUsuario(TipoUsuario.ADMINISTRADOR);
-        final Reserva reserva = leitor.reservar(10L, acervoDomCasmurro);
+        final Reserva reserva = leitor.reservar(acervoDomCasmurro);
         this.usuarioService.incluir(leitor);
         this.usuarioService.incluir(bibliotecario);
         this.usuarioService.incluir(administrador);

@@ -60,8 +60,25 @@ Os recursos principais são:
 - **/api/livros**
 - **/api/bibliotecas**
 - **/api/usuarios**
+- **/api/reservas**
 
-Os cinco recursos persistentes disponibilizam inclusão, alteração, exclusão, listagem e obtenção por identificador. Os identificadores são gerados automaticamente pelo banco e não devem ser enviados nos corpos de POST.
+Os cinco recursos cadastrais disponibilizam inclusão, alteração, exclusão, listagem e obtenção por identificador. Os identificadores são gerados automaticamente pelo banco e não devem ser enviados nos corpos de POST.
+
+## Reservas
+
+As reservas possuem um fluxo próprio, pois não representam um cadastro que possa ser alterado ou excluído livremente:
+
+~~~http
+POST /api/reservas
+GET /api/reservas
+GET /api/reservas/{id}
+PUT /api/reservas/{id}/confirmacao
+PUT /api/reservas/{id}/rejeicao
+~~~
+
+A solicitação recebe os identificadores do leitor e do acervo. A confirmação e a rejeição recebem o identificador do bibliotecário responsável. Somente um bibliotecário ativo e vinculado à biblioteca do acervo pode processar a reserva.
+
+Ao solicitar uma reserva, uma unidade é retirada da quantidade disponível do acervo. A confirmação mantém essa quantidade reservada, enquanto a rejeição devolve a unidade ao acervo. O identificador da reserva é gerado automaticamente pelo banco.
 
 ## Integração de livros por ISBN
 

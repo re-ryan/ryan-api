@@ -17,7 +17,7 @@ class ReservaTest {
         final Acervo acervo = criarAcervo(biblioteca, 2);
         final Leitor leitor = criarLeitor(4L, "Ana Souza", "ana@email.com");
 
-        final Reserva reserva = leitor.reservar(5L, acervo);
+        final Reserva reserva = leitor.reservar(acervo);
 
         assertEquals(StatusReserva.PENDENTE, reserva.getStatus());
         assertEquals(1, acervo.getQuantidadeDisponivel());
@@ -31,7 +31,7 @@ class ReservaTest {
         final Acervo acervo = criarAcervo(biblioteca, 1);
         final Leitor leitor = criarLeitor(4L, "Ana Souza", "ana@email.com");
         final Bibliotecario bibliotecario = criarBibliotecario(biblioteca);
-        final Reserva reserva = leitor.reservar(6L, acervo);
+        final Reserva reserva = leitor.reservar(acervo);
 
         bibliotecario.confirmar(reserva);
 
@@ -45,7 +45,7 @@ class ReservaTest {
         final Acervo acervo = criarAcervo(biblioteca, 1);
         final Leitor leitor = criarLeitor(4L, "Ana Souza", "ana@email.com");
         final Bibliotecario bibliotecario = criarBibliotecario(biblioteca);
-        final Reserva reserva = leitor.reservar(6L, acervo);
+        final Reserva reserva = leitor.reservar(acervo);
 
         bibliotecario.rejeitar(reserva);
 
@@ -59,7 +59,7 @@ class ReservaTest {
         final Acervo acervo = criarAcervo(biblioteca, 1);
         final Leitor leitor = criarLeitor(4L, "Ana Souza", "ana@email.com");
         final Bibliotecario bibliotecario = criarBibliotecario(biblioteca);
-        final Reserva reserva = leitor.reservar(6L, acervo);
+        final Reserva reserva = leitor.reservar(acervo);
         bibliotecario.confirmar(reserva);
 
         assertThrows(IllegalStateException.class, () -> bibliotecario.rejeitar(reserva));
@@ -73,7 +73,7 @@ class ReservaTest {
         final Leitor leitor = criarLeitor(4L, "Ana Souza", "ana@email.com");
         leitor.desativar();
 
-        assertThrows(IllegalStateException.class, () -> leitor.reservar(5L, acervo));
+        assertThrows(IllegalStateException.class, () -> leitor.reservar(acervo));
         assertEquals(1, acervo.getQuantidadeDisponivel());
     }
 
@@ -83,9 +83,9 @@ class ReservaTest {
         final Acervo acervo = criarAcervo(biblioteca, 1);
         final Leitor primeiroLeitor = criarLeitor(4L, "Ana Souza", "ana@email.com");
         final Leitor segundoLeitor = criarLeitor(5L, "Bruno Souza", "bruno@email.com");
-        primeiroLeitor.reservar(6L, acervo);
+        primeiroLeitor.reservar(acervo);
 
-        assertThrows(IllegalStateException.class, () -> segundoLeitor.reservar(7L, acervo));
+        assertThrows(IllegalStateException.class, () -> segundoLeitor.reservar(acervo));
         assertEquals(0, acervo.getQuantidadeDisponivel());
     }
 
@@ -94,9 +94,9 @@ class ReservaTest {
         final Biblioteca biblioteca = criarBiblioteca(1L, "Biblioteca Central");
         final Acervo acervo = criarAcervo(biblioteca, 2);
         final Leitor leitor = criarLeitor(4L, "Ana Souza", "ana@email.com");
-        leitor.reservar(5L, acervo);
+        leitor.reservar(acervo);
 
-        assertThrows(IllegalStateException.class, () -> leitor.reservar(6L, acervo));
+        assertThrows(IllegalStateException.class, () -> leitor.reservar(acervo));
         assertEquals(1, leitor.getReservas().size());
         assertEquals(1, acervo.getQuantidadeDisponivel());
     }
@@ -110,8 +110,8 @@ class ReservaTest {
         final Acervo segundoAcervo = segundaBiblioteca.adicionarLivro(5L, livro, 1);
         final Leitor leitor = criarLeitor(6L, "Ana Souza", "ana@email.com");
 
-        leitor.reservar(7L, primeiroAcervo);
-        leitor.reservar(8L, segundoAcervo);
+        leitor.reservar(primeiroAcervo);
+        leitor.reservar(segundoAcervo);
 
         assertEquals(2, leitor.getReservas().size());
         assertEquals(0, primeiroAcervo.getQuantidadeDisponivel());
@@ -125,7 +125,7 @@ class ReservaTest {
         final Acervo acervo = criarAcervo(bibliotecaDaReserva, 1);
         final Leitor leitor = criarLeitor(4L, "Ana Souza", "ana@email.com");
         final Bibliotecario bibliotecario = criarBibliotecario(outraBiblioteca);
-        final Reserva reserva = leitor.reservar(6L, acervo);
+        final Reserva reserva = leitor.reservar(acervo);
 
         assertThrows(IllegalArgumentException.class, () -> bibliotecario.confirmar(reserva));
         assertEquals(StatusReserva.PENDENTE, reserva.getStatus());
@@ -137,7 +137,7 @@ class ReservaTest {
         final Acervo acervo = criarAcervo(biblioteca, 1);
         final Leitor leitor = criarLeitor(4L, "Ana Souza", "ana@email.com");
         final Bibliotecario bibliotecario = criarBibliotecario(biblioteca);
-        final Reserva reserva = leitor.reservar(6L, acervo);
+        final Reserva reserva = leitor.reservar(acervo);
         bibliotecario.desativar();
 
         assertThrows(IllegalStateException.class, () -> bibliotecario.confirmar(reserva));
@@ -150,7 +150,7 @@ class ReservaTest {
         final Acervo acervo = criarAcervo(biblioteca, 1);
         final Leitor leitor = criarLeitor(4L, "Ana Souza", "ana@email.com");
         final Bibliotecario bibliotecario = criarBibliotecario(biblioteca);
-        final Reserva reserva = leitor.reservar(6L, acervo);
+        final Reserva reserva = leitor.reservar(acervo);
         biblioteca.desativar();
 
         assertThrows(IllegalStateException.class, () -> bibliotecario.confirmar(reserva));
@@ -162,7 +162,7 @@ class ReservaTest {
         final Biblioteca biblioteca = criarBiblioteca(1L, "Biblioteca Central");
         final Acervo acervo = criarAcervo(biblioteca, 1);
         final Leitor leitor = criarLeitor(4L, "Ana Souza", "ana@email.com");
-        final Reserva reserva = leitor.reservar(5L, acervo);
+        final Reserva reserva = leitor.reservar(acervo);
 
         assertThrows(UnsupportedOperationException.class,
                 () -> leitor.getReservas().add(reserva));

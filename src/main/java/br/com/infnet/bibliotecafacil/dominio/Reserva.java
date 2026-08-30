@@ -1,8 +1,11 @@
 package br.com.infnet.bibliotecafacil.dominio;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
@@ -12,6 +15,7 @@ import java.time.LocalDateTime;
 public class Reserva {
 
     @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     @ManyToOne(optional = false)
     @JoinColumn(name = "leitor_id")
@@ -22,10 +26,6 @@ public class Reserva {
     private LocalDateTime dataReserva;
     @Enumerated(EnumType.STRING)
     private StatusReserva status;
-
-    void setId(final Long id) {
-        this.id = id;
-    }
 
     void setLeitor(final Leitor leitor) {
         this.leitor = leitor;
@@ -54,6 +54,11 @@ public class Reserva {
 
     public Long getId() {
         return this.id;
+    }
+
+    @JsonIgnore
+    public Leitor getLeitor() {
+        return this.leitor;
     }
 
     public Acervo getAcervo() {

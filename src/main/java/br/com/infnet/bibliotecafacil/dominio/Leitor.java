@@ -14,14 +14,13 @@ public class Leitor extends Usuario {
     @OneToMany(mappedBy = "leitor", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Reserva> reservas = new ArrayList<>();
 
-    public Reserva reservar(final Long idReserva, final Acervo acervo) {
+    public Reserva reservar(final Acervo acervo) {
         this.validarUsuarioAtivo();
         if (acervo == null) {
             throw new NullPointerException("O acervo é obrigatório.");
         }
         this.validarReservaPendenteDuplicada(acervo);
         final Reserva reserva = new Reserva();
-        reserva.setId(idReserva);
         reserva.setLeitor(this);
         reserva.setAcervo(acervo);
         reserva.iniciar();

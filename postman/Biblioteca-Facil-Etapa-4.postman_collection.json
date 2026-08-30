@@ -28,6 +28,22 @@
     {
       "key": "usuarioId",
       "value": ""
+    },
+    {
+      "key": "leitorId",
+      "value": ""
+    },
+    {
+      "key": "bibliotecarioId",
+      "value": ""
+    },
+    {
+      "key": "acervoId",
+      "value": ""
+    },
+    {
+      "key": "reservaId",
+      "value": ""
     }
   ],
   "event": [
@@ -471,6 +487,162 @@
           "request": {
             "method": "DELETE",
             "url": "{{baseUrl}}/api/usuarios/{{usuarioId}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Reservas",
+      "item": [
+        {
+          "name": "Identificar leitor e bibliotecário (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const usuarios = pm.response.json();",
+                  "const leitor = usuarios.find(usuario => usuario.tipoUsuario === 'LEITOR');",
+                  "const bibliotecario = usuarios.find(usuario => usuario.tipoUsuario === 'BIBLIOTECARIO');",
+                  "pm.expect(leitor).to.exist;",
+                  "pm.expect(bibliotecario).to.exist;",
+                  "pm.collectionVariables.set('leitorId', leitor.id);",
+                  "pm.collectionVariables.set('bibliotecarioId', bibliotecario.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/usuarios"
+          }
+        },
+        {
+          "name": "Identificar acervo (200)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const bibliotecas = pm.response.json();",
+                  "const biblioteca = bibliotecas.find(item => item.acervos?.length > 0);",
+                  "pm.expect(biblioteca).to.exist;",
+                  "pm.collectionVariables.set('acervoId', biblioteca.acervos[0].id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/bibliotecas"
+          }
+        },
+        {
+          "name": "Solicitar reserva (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "pm.collectionVariables.set('reservaId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leitorId\": {{leitorId}},\n  \"acervoId\": {{acervoId}}\n}"
+            },
+            "url": "{{baseUrl}}/api/reservas"
+          }
+        },
+        {
+          "name": "Obter reserva por ID (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/reservas/{{reservaId}}"
+          }
+        },
+        {
+          "name": "Confirmar reserva (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bibliotecarioId\": {{bibliotecarioId}}\n}"
+            },
+            "url": "{{baseUrl}}/api/reservas/{{reservaId}}/confirmacao"
+          }
+        },
+        {
+          "name": "Solicitar nova reserva (201)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const resposta = pm.response.json();",
+                  "pm.collectionVariables.set('reservaId', resposta.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"leitorId\": {{leitorId}},\n  \"acervoId\": {{acervoId}}\n}"
+            },
+            "url": "{{baseUrl}}/api/reservas"
+          }
+        },
+        {
+          "name": "Rejeitar reserva (200)",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"bibliotecarioId\": {{bibliotecarioId}}\n}"
+            },
+            "url": "{{baseUrl}}/api/reservas/{{reservaId}}/rejeicao"
+          }
+        },
+        {
+          "name": "Listar reservas (200)",
+          "request": {
+            "method": "GET",
+            "url": "{{baseUrl}}/api/reservas"
           }
         }
       ]
